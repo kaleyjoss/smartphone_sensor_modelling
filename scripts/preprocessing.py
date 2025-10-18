@@ -158,7 +158,7 @@ def combine_same_day(df):
         if sub_df.index.name != 'dt':
             sub_df.set_index('dt', inplace=True)
         sub_df.index = pd.to_datetime(sub_df.index, errors='coerce')
-        sub_df['dt_date'] = sub_df.index.date  # Add a 'dt_date' column for grouping by date
+        sub_df['dt_date'] = sub_df.index.date  # Add a 'dt_date' column for grouping by date-- this protects if your dt has time in it
 
         # Step 3: Group by 'dt_date', fill missing values, and reset index to ungroup
         filled_df = (
@@ -169,9 +169,6 @@ def combine_same_day(df):
         )
 
 
-        # Step 4: Extract the unique `week` for each `dt_date`
-        week_mapping = filled_df.groupby('dt_date')['week'].first()
-
         # Step 5: Define aggregation functions for numeric and non-numeric data
         aggregation_functions = {
             col: 'mean' if pd.api.types.is_numeric_dtype(filled_df[col]) else 'last'
@@ -181,9 +178,6 @@ def combine_same_day(df):
         # Step 6: Group by 'dt_date' again and apply the aggregation functions
         avg_df = filled_df.groupby('dt_date').agg(aggregation_functions).reset_index()
 
-        # Step 7: Reassign the correct integer `week` value based on `dt_date`
-        avg_df['week'] = avg_df['dt_date'].map(week_mapping)
-
         # Step 8: Add this participant's data to the list
         days_subjects.append(avg_df)
 
@@ -192,6 +186,7 @@ def combine_same_day(df):
 
     # Step 10: Rename the dt_date column to 'dt'
     days_df.rename(columns={'dt_date': 'dt'}, inplace=True)
+    days_df = days_df.reset_index(drop=True)
 
     # Step 11: Return the DataFrame
     return days_df
@@ -274,10 +269,9 @@ def reindex_to_all_days(days_df):
 
         # Reindex the group to include all dates in the range
         # This will introduce NaN values for any dates not present in the original data
-        group = group.set_index('dt').reindex(full_date_range).reset_index()
+        group = group.set_index('dt').reindex(full_date_range).reset_index(names='dt')
         group['num_id'] = participant  # Add participant ID back to the DataFrame
         group.rename(columns={'index': 'dt'}, inplace=True)  # Rename index back to 'dt'
-        
 
 
         # Append this participant's reindexed data to the list
@@ -285,24 +279,14 @@ def reindex_to_all_days(days_df):
 
     # Concatenate all reindexed data into a single DataFrame
     days_df_alldays = pd.concat(reindexed_data, ignore_index=True)
-    days_df_alldays = assign_week_numbers_numid(days_df_alldays)
 
     # Now `days_df_alldays` has rows for all dates between each participant's first and last date,
     # with NaNs where data was originally missing.
 
     # Initialize an empty column for day numbers
-    days_df_alldays['day'] = pd.NA
+    days_df_alldays['day'] = days_df_alldays.groupby('num_id').cumcount()
 
-    # Loop over each participant group
-    for participant, group in days_df_alldays.groupby('num_id'):
-        # Sort by 'dt' to ensure chronological order
-        group = group.sort_values('dt')
-        
-        # Assign day numbers in sequence
-        for count, i in enumerate(group.index):
-            # Update the 'day' column in the original DataFrame
-            days_df_alldays.loc[i, 'day'] = count
-
+    days_df_alldays['dt'] = pd.to_datetime(days_df_alldays['dt']).dt.normalize()
     return days_df_alldays
 
 
