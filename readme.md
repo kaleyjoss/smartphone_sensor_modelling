@@ -1,6 +1,6 @@
 # Smartphone Sensor Predictive Modeling
 
-This repository contains code and resources for building predictive models using smartphone sensor data. The project encompasses data preprocessing, exploratory data analysis (EDA), feature selection, clustering, and various modeling techniques.
+This repository contains code and resources for building predictive models using smartphone sensor data. The project encompasses data preprocessing, exploratory data analysis (EDA), feature selection, clustering, and various ML models.
 
 ## Folder Structure
 
@@ -17,8 +17,9 @@ The repository is organized into the following directories:
 - `/notebooks`: Contains Jupyter notebooks documenting the analysis process.
   - `01_preprocessing.ipynb`: Data preprocessing steps, including merging datasets and imputing missing values.
   - `02_processing_Pipeline.ipynb`: Pipeline object for value normalization by-column. Transformation of df into wide and slope/intercept versions, for feature extraction. Testing on Hist Gradient Boosting Regressor. Network-based statistic (NBS) for clinical populations vs. healthy population. Hierarchical agglomerative clustering on features + PCA on each cluster. Correlation structures of PCs.
-  - `03_demographic_clustering.ipynb`: Correlation across features. Hierarchical agglomerative clustering on features + PCA on each cluster. Correlation structures of PCs.
-  - `04_prediction.ipynb`: Linear regression and nested linear regression of depression score and various covariates. Feature importance analysis of a survey of predictive model types. Visualization of R2 for accuracy of different models for each dataset. Comparing imputed vs. nonimputed data.
+  - `03_demographic_clustering.ipynb`: Correlation across demographic information. Hierarchical agglomerative clustering on demographic features to group subjects into clusters.
+   - `03_feature_pca.ipynb`: Correlation across features. Hierarchical agglomerative clustering on demographic features + PCA on each cluster. Correlation structures of extracted PCs. 
+  - `04_prediction.ipynb`: Linear regression and nested linear regression of depression score and various covariates. Evaluating six machine learning architectures for prediction of depression score based off passive sensor data. Feature importance analysis of a survey of predictive model types. Visualization of R2 for accuracy of different models for each dataset across different time scales. Comparing imputed vs. nonimputed data.
  
 
 ## Analysis Workflow
