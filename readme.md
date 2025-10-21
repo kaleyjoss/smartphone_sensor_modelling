@@ -16,16 +16,9 @@ The repository is organized into the following directories:
 
 - `/notebooks`: Contains Jupyter notebooks documenting the analysis process.
   - `01_preprocessing.ipynb`: Data preprocessing steps, including merging datasets and imputing missing values.
-  - `01_preprocessing_DT.ipynb`: Decision Tree-specific preprocessing steps.
-  - `02_var_clustering.ipynb`: Variable clustering analysis.
-  - `02_feature_pca.ipynb`: Principal Component Analysis (PCA) for feature extraction.
-  - `02_feature_pca_with_missingness.ipynb`: PCA considering missing data patterns.
-  - `02_feature_selection.ipynb`: Feature selection techniques and results.
-  - `03_demographic_clustering.ipynb`: Clustering analysis based on demographic data.
-  - `04_modeling_DT.ipynb`: Decision Tree modeling.
-  - `04_modeling_LR.ipynb`: Logistic Regression modeling.
-  - `04_modeling_RF.ipynb`: Random Forest modeling.
-  - `05_results.ipynb`: Compilation and discussion of modeling results.
+  - `02_processing_Pipeline.ipynb`: Pipeline object for value normalization by-column. Transformation of df into wide and slope/intercept versions, for feature extraction. Testing on Hist Gradient Boosting Regressor. Network-based statistic (NBS) for clinical populations vs. healthy population. Hierarchical agglomerative clustering on features + PCA on each cluster. Correlation structures of PCs.
+  - `03_demographic_clustering.ipynb`: Correlation across features. Hierarchical agglomerative clustering on features + PCA on each cluster. Correlation structures of PCs.
+  - `04_prediction.ipynb`: Linear regression and nested linear regression of depression score and various covariates. Feature importance analysis of a survey of predictive model types. Visualization of R2 for accuracy of different models for each dataset. Comparing imputed vs. nonimputed data.
  
 
 ## Analysis Workflow
@@ -46,13 +39,14 @@ The project follows these main steps:
    - Variable clustering to identify related features.
    - Demographic data clustering to segment participants.
 
-4. **Modeling**
-   - Applying Decision Trees, Logistic Regression, Random Forests, and Support Vector Machines to build predictive models.
-   - Evaluating model performance and comparing results.
+4. **Visualizing RF Model**
+   - Applying Random Forest to build predictive models.
+   - Visualiza results
 
-5. **Results**
-   - Compiling results from various models.
-   - Interpreting findings and discussing implications.
+5. **Predictive Modelling using many models**
+   - Running a wide variety of models
+   - Hyperparameter tuning
+   - Evaluating model performance and comparing results.
 
 ## Dependencies
 
@@ -66,15 +60,12 @@ pip install -r requirements.txt
 
 1. **Data Preprocessing**: Execute the scripts in the `/scripts` directory or run the `01_preprocessing.ipynb` notebook to preprocess the data.
 
-2. **Exploratory Data Analysis**: Use the EDA notebooks (`02_var_clustering.ipynb`, `02_feature_pca.ipynb`, etc.) to explore and visualize the data.
+2. **Exploratory Data Analysis**: Use the EDA notebooks (`02_processing_Pipeline.ipynb`, `03_demographic_clustering.ipynb`, etc.) to explore and visualize the data.
 
 3. **Feature Selection and Clustering**: Apply feature selection methods and perform clustering analyses using the corresponding notebooks.
 
-4. **Modeling**: Run the modeling notebooks (`04_modeling_DT.ipynb`, `04_modeling_LR.ipynb`, etc.) to build and evaluate predictive models.
-
-5. **Results Analysis**: Review the `05_results.ipynb` notebook for a comprehensive analysis of model performance and findings.
+4. **Modeling**: Run the modeling notebooks (`04_prediction.ipynb`, etc.) to build and evaluate predictive models.
 
 
 ---
 
-*Note: The content above is based on the repository's structure and available information. For detailed guidance, refer to the individual scripts and notebooks within the repository.* 
