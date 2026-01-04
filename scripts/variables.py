@@ -17,7 +17,7 @@ clinical = ['cid','bin_clin','bipolar','scz','screen_1','screen_2','screen_3','s
 demographics = ['gender','education','working','income_satisfaction',
                 'incomelastyear','marital_status','race','age',
                 'heard_about_us','device','startdate','study_arm', 'study']
-alc_cols = ['alc_1','alc_2','alc_3','alc_sum', 'alc_cat']
+alc_cols = ['alc_1','alc_2','alc_3','alc_sum']
 mhs_cols = ['mhs_1','mhs_2','mhs_3','mhs_4','mhs_5']
 
 baseline_cols = gad_cols + phq9_base + clinical + demographics + alc_cols + mhs_cols
@@ -30,7 +30,7 @@ sds_cols = ['sds_1','sds_2','sds_3','stress','support']
 sleep_cols = ['sleep_1','sleep_2','sleep_3']
 gic_cols = ['mood_1']
 
-weekly_cols = phq9_cols + sds_cols + sleep_cols + gic_cols + mhs_cols
+weekly_cols = phq9_cols + sds_cols + sleep_cols + gic_cols
 
 weekly_cols_dict = {
      'phq9': phq9_cols, #keep weeks 1,2,3,4,6,8,10,12

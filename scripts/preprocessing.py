@@ -138,7 +138,7 @@ def bin_phq2(value):
 ########## Functions ##############
 
 ########## Combine rows from the same day ###############
-def combine_same_day(df):
+def combine_same_day(df, id_col='num_id'):
     '''Purpose: 
     So that different variables recorded at different 
     times on the SAME day don't show up as NA cells
@@ -151,41 +151,23 @@ def combine_same_day(df):
     days_subjects = []
 
     # Step 1: Mask by participant
-    for subject in df['num_id'].unique():
-        sub_df = df[df['num_id'] == subject].copy()
-
-        # Step 2: Set datetime index and create a 'dt_date' column
-        if sub_df.index.name != 'dt':
-            sub_df.set_index('dt', inplace=True)
-        sub_df.index = pd.to_datetime(sub_df.index, errors='coerce')
-        sub_df['dt_date'] = sub_df.index.date  # Add a 'dt_date' column for grouping by date-- this protects if your dt has time in it
-
-        # Step 3: Group by 'dt_date', fill missing values, and reset index to ungroup
-        filled_df = (
-            sub_df.groupby('dt_date')
-            .apply(lambda x: x.ffill().bfill())
-            .reset_index(drop=True)
-            .infer_objects(copy=False)
-        )
-
-
+    for subject, sub_df in df.groupby(id_col, as_index=False):
         # Step 5: Define aggregation functions for numeric and non-numeric data
         aggregation_functions = {
-            col: 'mean' if pd.api.types.is_numeric_dtype(filled_df[col]) else 'last'
-            for col in filled_df.columns if col not in ['dt_date', 'week']  # Exclude 'dt_date' and 'week' from aggregation
+            col: 'mean' if pd.api.types.is_numeric_dtype(sub_df[col]) else 'last'
+            for col in sub_df.columns 
         }
 
         # Step 6: Group by 'dt_date' again and apply the aggregation functions
-        avg_df = filled_df.groupby('dt_date').agg(aggregation_functions).reset_index()
+        avg_df = sub_df.groupby('dt', as_index=False).agg(aggregation_functions)
 
+        avg_df[id_col] = subject
         # Step 8: Add this participant's data to the list
         days_subjects.append(avg_df)
 
     # Step 9: Concatenate all subjects into a new DataFrame
     days_df = pd.concat(days_subjects)
 
-    # Step 10: Rename the dt_date column to 'dt'
-    days_df.rename(columns={'dt_date': 'dt'}, inplace=True)
     days_df = days_df.reset_index(drop=True)
 
     # Step 11: Return the DataFrame
@@ -253,14 +235,14 @@ def combine_same_week(df):
 ############ CREATE #4 df_alldays & SAVE .CSV ###############
 #  days_df -> df_alldays, reindexing each range of dates for a participant to include all dates in that range
 
-def reindex_to_all_days(days_df):
+def reindex_to_all_days(days_df, id_col='num_id'):
     days_df['dt'] = pd.to_datetime(days_df['dt'])  # Ensure 'dt' is a datetime column
 
     # Container to store each participant's reindexed data
     reindexed_data = []
 
     # Iterate over each participant's data
-    for participant, group in days_df.groupby('num_id'):
+    for participant, group in days_df.groupby(id_col):
         # Sort by 'dt' to ensure chronological order
         group = group.sort_values('dt')
 
@@ -270,8 +252,7 @@ def reindex_to_all_days(days_df):
         # Reindex the group to include all dates in the range
         # This will introduce NaN values for any dates not present in the original data
         group = group.set_index('dt').reindex(full_date_range).reset_index(names='dt')
-        group['num_id'] = participant  # Add participant ID back to the DataFrame
-        group.rename(columns={'index': 'dt'}, inplace=True)  # Rename index back to 'dt'
+        group[id_col] = participant  # Add participant ID back to the DataFrame
 
 
         # Append this participant's reindexed data to the list
@@ -284,7 +265,7 @@ def reindex_to_all_days(days_df):
     # with NaNs where data was originally missing.
 
     # Initialize an empty column for day numbers
-    days_df_alldays['day'] = days_df_alldays.groupby('num_id').cumcount()
+    days_df_alldays['day'] = days_df_alldays.groupby(id_col).cumcount()
 
     days_df_alldays['dt'] = pd.to_datetime(days_df_alldays['dt']).dt.normalize()
     return days_df_alldays
