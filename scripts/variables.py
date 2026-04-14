@@ -5,7 +5,7 @@ df_mis = ['v1_day_mis','v2_day_mis','v1_week_mis','v2_week_mis']
 df_names_with_mis = df_names + df_mis
 
 # Variables to keep consistent over all dfs and to not alter in preprocessing
-id_columns=['num_id','dt','week','day','week_id','idx','v','season','day_of_week','cohort']
+id_columns=['num_id','date','month','week','day','id_week','id_day','v','season','day_of_week','cohort']
 demographic_columns = ['gender','age','num_id']
 
 ## Variables from Baseline Surveys
@@ -17,18 +17,20 @@ clinical = ['cid','bin_clin','bipolar','scz','screen_1','screen_2','screen_3','s
 demographics = ['gender','education','working','income_satisfaction',
                 'incomelastyear','marital_status','race','age',
                 'heard_about_us','device','startdate','study_arm', 'study']
-alc_cols = ['alc_1','alc_2','alc_3','alc_sum']
-mhs_cols = ['mhs_1','mhs_2','mhs_3','mhs_4','mhs_5']
+alc_cols = ['alc_1','alc_2','alc_3','alc_sum','alc_cat']
+mhs_cols = ['mhs_1','mhs_2','mhs_3','mhs_4','mhs_5','mhs_sum']
 
 baseline_cols = gad_cols + phq9_base + clinical + demographics + alc_cols + mhs_cols
 
 
 ## Variables from Weekly Surveys
 phq9_cols = ['phq9_1','phq9_2','phq9_3','phq9_4','phq9_5','phq9_6',
-             'phq9_7','phq9_8','phq9_9','phq9_sum', 'phq9_bin','phq9_cat']
+             'phq9_7','phq9_8','phq9_9','phq9_sum', ]
 sds_cols = ['sds_1','sds_2','sds_3','stress','support']
 sleep_cols = ['sleep_1','sleep_2','sleep_3']
 gic_cols = ['mood_1']
+
+created_cols = ['phq9_bin','phq9_cat','mhs_sum','alc_cat','alc_sum','gad_cat','phq9_sum','phq2_sum','phq2_bin','interaction_diversity','aggregate_communication']
 
 weekly_cols = phq9_cols + sds_cols + sleep_cols + gic_cols
 
@@ -73,11 +75,11 @@ daily_cols_v1 = ['aggregate_communication', 'call_count',
        'sms_count', 'sms_length','mobility', 'mobility_radius',
        'unreturned_calls']
 
-daily_v2_sensor = ['distance_walking', 'hours_active', 'distance_active',
-        'came_to_work','distance_powered_vehicle',
-       'hours_high_speed_transportation', 'hours_of_sleep',
+daily_v2_sensor = ['distance_walking', 'distance_active', 'hours_active', 
+        'distance_powered_vehicle', 'hours_powered_vehicle',
+       'hours_high_speed_transportation', 
        'distance_high_speed_transportation',
-       'hours_powered_vehicle', 'location_variance']
+       'location_variance', 'came_to_work','hours_of_sleep']
 
 daily_v2_sensor_hr = [f'{col}_hr' for col in daily_v2_sensor if col != 'came_to_work']
 

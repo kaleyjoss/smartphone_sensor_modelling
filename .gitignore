@@ -1,0 +1,23 @@
+# Data
+BRIGHTEN_data/
+/BRIGHTEN_data/
+
+# Archive
+archive/
+/archive/
+archive/smartphone_sensor_modelling
+
+# Mac system files
+.DS_Store
+
+# Node modules (if using JavaScript)
+node_modules/
+
+# Python cache (if using Python)
+__pycache__/
+*.pyc
+
+# Environment variables / Secrets
+.env
+
+

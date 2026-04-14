@@ -23,7 +23,7 @@ from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import mean_squared_error
 
-id_columns =['num_id','dt','week','day','idx']
+id_columns =['num_id','date','week','day','idx']
 
 
 ########### Generic functions ###############
@@ -40,20 +40,20 @@ def save_df(df, data_dir, filename=None):
         return os.path.join(data_dir, f'{df.name}.csv')
 
 
-def assign_week_numbers(df):
-    # Ensure 'dt' is in datetime format
-    df['dt'] = pd.to_datetime(df['dt'], errors='coerce')
+def assign_week_numbers(df, day_col='date'):
+    # Ensure day_col is in datetime format
+    df[day_col] = pd.to_datetime(df[day_col], errors='coerce')
 
     # Calculate week number for each participant and update back to the original DataFrame
     for participant_id in df['participant_id'].unique():
         # Filter the DataFrame by num_id
         sub_df = df[df['participant_id'] == participant_id].copy()
         
-        # Sort by 'dt'
-        sub_df = sub_df.sort_values('dt')
+        # Sort by day_col
+        sub_df = sub_df.sort_values(day_col)
         
         # Calculate the week number relative to the first date for this participant
-        sub_df['week'] = ((sub_df['dt'] - sub_df['dt'].min()).dt.days // 7).astype(int)
+        sub_df['week'] = ((sub_df[day_col] - sub_df[day_col].min()).dt.days // 7).astype(int)
         
         # Update the original DataFrame with the calculated week numbers
         df.loc[df['participant_id'] == participant_id, 'week'] = sub_df['week']
@@ -61,20 +61,20 @@ def assign_week_numbers(df):
     return df
 
 
-def assign_week_numbers_numid(df):
-    # Ensure 'dt' is in datetime format
-    df['dt'] = pd.to_datetime(df['dt'], errors='coerce')
+def assign_week_numbers_numid(df, day_col='date'):
+    # Ensure day_col is in datetime format
+    df[day_col] = pd.to_datetime(df[day_col], errors='coerce')
 
     # Calculate week number for each participant and update back to the original DataFrame
     for num_id in df['num_id'].unique():
         # Filter the DataFrame by num_id
         sub_df = df[df['num_id'] == num_id].copy()
         
-        # Sort by 'dt'
-        sub_df = sub_df.sort_values('dt')
+        # Sort by day_col
+        sub_df = sub_df.sort_values(day_col)
         
         # Calculate the week number relative to the first date for this participant
-        sub_df['week'] = ((sub_df['dt'] - sub_df['dt'].min()).dt.days // 7).astype(int)
+        sub_df['week'] = ((sub_df[day_col] - sub_df[day_col].min()).dt.days // 7).astype(int)
         
         # Update the original DataFrame with the calculated week numbers
         df.loc[df['num_id'] == num_id, 'week'] = sub_df['week']
@@ -136,122 +136,81 @@ def bin_phq2(value):
 
 
 ########## Functions ##############
-
-########## Combine rows from the same day ###############
-def combine_same_day(df, id_col='num_id'):
+def combine_same_timeperiod(df, id_col='num_id', combine_on_col=None, dt_col=None):
     '''Purpose: 
     So that different variables recorded at different 
     times on the SAME day don't show up as NA cells
-    but instead are all listed in the same row
+    but instead are all listed in the same row.
 
-    dt = datetime variable from the raw data
-    dt_date = just the date as a datetime variable
+    dt_col: the original datetime column with timestamps — 
+            rows on the same day will have their timestamps 
+            joined into a comma-separated string e.g. "1/2/25 8:05am, 1/2/25 10:03pm"
+    combine_on_col: the date-only column used to group rows by day/week etc
     '''
 
     days_subjects = []
 
-    # Step 1: Mask by participant
+    # Step 1: Loop over each participant
     for subject, sub_df in df.groupby(id_col, as_index=False):
-        # Step 5: Define aggregation functions for numeric and non-numeric data
+        if dt_col != None:
+            sub_df[dt_col] = pd.to_datetime(sub_df[dt_col], dayfirst=True, format='mixed')
+            sub_df[dt_col] = sub_df[dt_col].dt.tz_localize(None)
+            
+
+        if combine_on_col==None:
+            combine_on_col='date'
+            sub_df[combine_on_col] = sub_df[dt_col].dt.normalize()
+
+        
+        # Step 2: Define aggregation functions for each column
+        # Numeric columns -> take the mean
+        # Non-numeric columns -> take the last value
         aggregation_functions = {
             col: 'mean' if pd.api.types.is_numeric_dtype(sub_df[col]) else 'last'
-            for col in sub_df.columns 
+            for col in sub_df.columns if col != dt_col
         }
 
-        # Step 6: Group by 'dt_date' again and apply the aggregation functions
-        avg_df = sub_df.groupby('dt', as_index=False).agg(aggregation_functions)
+        # Step 3: Override the dt column to collect all timestamps as a joined string
+        # so that if two rows share the same day, both timestamps are preserved
+        if dt_col != None:
+            if dt_col in sub_df.columns:
+                aggregation_functions[dt_col] = lambda x: ', '.join(x.astype(str))
 
+        # Step 4: Group by date (combine_on_col) and apply the aggregation functions
+        avg_df = sub_df.groupby(combine_on_col, as_index=False).agg(aggregation_functions)
+        avg_df = avg_df.drop_duplicates()
+
+        # Step 5: Re-assign the subject id (groupby can sometimes drop it)
         avg_df[id_col] = subject
-        # Step 8: Add this participant's data to the list
         days_subjects.append(avg_df)
 
-    # Step 9: Concatenate all subjects into a new DataFrame
+    # Step 6: Concatenate all subjects into a single DataFrame
     days_df = pd.concat(days_subjects)
-
     days_df = days_df.reset_index(drop=True)
 
-    # Step 11: Return the DataFrame
     return days_df
 
-########## Combine rows from the same day ###############
-def combine_same_week(df):
-    '''Purpose: 
-    So that different variables recorded at different 
-    times on the SAME day don't show up as NA cells
-    but instead are all listed in the same row
-
-    dt = datetime variable from the raw data
-    dt_date = just the date as a datetime variable
-    '''
-
-    days_subjects = []
-
-    # Step 1: Mask by participant
-    for subject in df['num_id'].unique():
-        sub_df = df[df['num_id'] == subject].copy()
-
-        # Step 2: Set datetime index and create a 'dt_date' column
-        if sub_df.index.name != 'dt':
-            sub_df.set_index('dt', inplace=True)
-        sub_df.index = pd.to_datetime(sub_df.index, errors='coerce')
-        sub_df['dt_date'] = sub_df.index.date  # Add a 'dt_date' column for grouping by date
-
-        # Step 3: Group by 'dt_date', fill missing values, and reset index to ungroup
-        filled_df = (
-            sub_df.groupby('dt_date')
-            .apply(lambda x: x.ffill().bfill())
-            .reset_index(drop=True)
-            .infer_objects(copy=False)  # Fix future dtype change issue
-        )
-
-
-        # Step 4: Extract the unique `week` for each `dt_date`
-        week_mapping = filled_df.groupby('dt_date')['week'].first()
-
-        # Step 5: Define aggregation functions for numeric and non-numeric data
-        aggregation_functions = {
-            col: 'mean' if pd.api.types.is_numeric_dtype(filled_df[col]) else 'first'
-            for col in filled_df.columns if col not in ['dt_date', 'week']  # Exclude 'dt_date' and 'week' from aggregation
-        }
-
-        # Step 6: Group by 'dt_date' again and apply the aggregation functions
-        avg_df = filled_df.groupby('dt_date').agg(aggregation_functions).reset_index()
-
-        # Step 7: Reassign the correct integer `week` value based on `dt_date`
-        avg_df['week'] = avg_df['dt_date'].map(week_mapping)
-
-        # Step 8: Add this participant's data to the list
-        days_subjects.append(avg_df)
-
-    # Step 9: Concatenate all subjects into a new DataFrame
-    days_df = pd.concat(days_subjects)
-
-    # Step 10: Rename the dt_date column to 'dt'
-    days_df.rename(columns={'dt_date': 'dt'}, inplace=True)
-
-    # Step 11: Return the DataFrame
-    return days_df
 
 ############ CREATE #4 df_alldays & SAVE .CSV ###############
 #  days_df -> df_alldays, reindexing each range of dates for a participant to include all dates in that range
 
-def reindex_to_all_days(days_df, id_col='num_id'):
-    days_df['dt'] = pd.to_datetime(days_df['dt'])  # Ensure 'dt' is a datetime column
+def reindex_to_all_days(days_df, id_col='num_id', day_col='date'):
+    days_df[day_col] = pd.to_datetime(days_df[day_col])  # Ensure day_col is a datetime column
 
     # Container to store each participant's reindexed data
     reindexed_data = []
 
     # Iterate over each participant's data
     for participant, group in days_df.groupby(id_col):
-        # Sort by 'dt' to ensure chronological order
-        group = group.sort_values('dt')
+        # Sort by day_col to ensure chronological order
+        group = group.sort_values(day_col)
 
         # Generate a full date range from the first to the last date in this participant's data
-        full_date_range = pd.date_range(start=group['dt'].min(), end=group['dt'].max(), freq='D')
+        full_date_range = pd.date_range(start=group[day_col].min(), end=group[day_col].max(), freq='D')
 
         # Reindex the group to include all dates in the range
         # This will introduce NaN values for any dates not present in the original data
-        group = group.set_index('dt').reindex(full_date_range).reset_index(names='dt')
+        group = group.set_index(day_col).reindex(full_date_range).reset_index(names=day_col)
         group[id_col] = participant  # Add participant ID back to the DataFrame
 
 
@@ -267,20 +226,20 @@ def reindex_to_all_days(days_df, id_col='num_id'):
     # Initialize an empty column for day numbers
     days_df_alldays['day'] = days_df_alldays.groupby(id_col).cumcount()
 
-    days_df_alldays['dt'] = pd.to_datetime(days_df_alldays['dt']).dt.normalize()
+    days_df_alldays[day_col] = pd.to_datetime(days_df_alldays[day_col]).dt.normalize()
     return days_df_alldays
 
 
 ################## Linear Interpolation function #########################
-def add_linear_interpolated_col(input_df, cols_to_interpolate, threshold_percentage, overwrite=False, verbose=False):
+def add_linear_interpolated_col(input_df, cols_to_interpolate, threshold_percentage, day_col='date', overwrite=False, verbose=False):
 
     int_label = f'_int{threshold_percentage}'
-    input_df['dt'] = pd.to_datetime(input_df['dt'], errors='coerce')
+    input_df[day_col] = pd.to_datetime(input_df[day_col], errors='coerce')
     
     if not any(int_label in col for col in input_df.columns) or overwrite:
         output_df = input_df.copy()
         
-        output_df['dt'] = pd.to_datetime(output_df['dt'], errors='coerce')
+        output_df['date'] = pd.to_datetime(output_df['date'], errors='coerce')
 
         for var in cols_to_interpolate:
             if var in input_df.columns:
@@ -291,7 +250,7 @@ def add_linear_interpolated_col(input_df, cols_to_interpolate, threshold_percent
                 var_weeks_interpolated = 0
 
                 for participant, sub_weeks in output_df.groupby('num_id'):
-                    sub_weeks = sub_weeks.sort_values('dt')
+                    sub_weeks = sub_weeks.sort_values('date')
                     num_unique_weeks = sub_weeks['week'].nunique()  # Count unique weeks
                     var_weeks += num_unique_weeks
                     
@@ -301,7 +260,7 @@ def add_linear_interpolated_col(input_df, cols_to_interpolate, threshold_percent
                         if percent_non_na >= threshold_percentage and percent_non_na < 100:
                             if verbose==True:
                                 print(f'Participant {participant} | Week {week_num} | Percent non-NA: {round(percent_non_na,3)}\nInterpolating...')
-                            sub_week = sub_week.set_index('dt')
+                            sub_week = sub_week.set_index(day_col)
                             sub_week[f'{var}{int_label}'] = sub_week[var].interpolate(method='time')
                             percent_non_na_after = (1 - sub_week[f'{var}{int_label}'].isna().mean()) * 100
                             sub_week = sub_week.reset_index()
@@ -643,7 +602,7 @@ def missforest_imputation(original_df, cols_to_impute, imputation_threshold=0.6,
     nonimputed_cols = [col for col in original_df.columns if col not in cols_to_impute]
     r2=999
     p=999
-    id_columns = ['num_id','dt','week','day','idx']
+    id_columns = ['num_id','date','week','day','idx']
     nonimputed_df = original_df[nonimputed_cols]
     df = original_df[cols_to_impute + id_columns].copy() # this df will be input into the imputer 
     
@@ -762,7 +721,7 @@ def regress_covariates(df, to_regress_out, to_ignore=None):
 
 num_to_plot = 3
 
-def plot_normalization(df, cols_to_scale, num_to_plot, subject_to_plot=None):
+def plot_normalization(df, cols_to_scale, num_to_plot, day_col='date', subject_to_plot=None):
     ''' Plotting the normalization and outlier-removal of select numeric columns to visually inspect non-warping
     df = DataFrame with numeric_cols in columns 
     numeric_cols = list of all columns in df which are numeric
@@ -826,15 +785,15 @@ def plot_normalization(df, cols_to_scale, num_to_plot, subject_to_plot=None):
             sub_col_df = col_df[col_df['num_id']==subject_to_plot]
 
             print('Scaled Data for one subject in modified dataframe')
-            plt.plot(sub_col_df['dt'], sub_col_df[f'{x_col}_nonoutliers'], label='days_df', color='blue', marker='o')  
+            plt.plot(sub_col_df[day_col], sub_col_df[f'{x_col}_nonoutliers'], label='days_df', color='blue', marker='o')  
             plt.show()
 
             print('Lesioned data for same subject in  original dataframe-- should have less outliers')
-            plt.plot(sub_days_df['dt'], sub_days_df[x_col], label='sub_days_df', color='red', marker='o')  
+            plt.plot(sub_days_df[day_col], sub_days_df[x_col], label='sub_days_df', color='red', marker='o')  
             plt.show()
             
             print('Scaled data for same subject in  original dataframe-- should look exaclty like above with different scale')
-            plt.plot(sub_days_df['dt'], sub_days_df[f'{x_col}_nonoutliers_scaled'], label='sub_days_df', color='red', marker='o')  
+            plt.plot(sub_days_df[day_col], sub_days_df[f'{x_col}_nonoutliers_scaled'], label='sub_days_df', color='red', marker='o')  
             plt.show()
 
 
@@ -897,7 +856,7 @@ def apply_log_transform(df, cols):
     df_transformed = df.select_dtypes(include='number').copy()
     #print(f'Cols in df: {df.columns.to_list()}')
     cols_nonnumer = [col for col in df.columns.to_list() if col not in df_transformed.columns.to_list()]
-    cols_dropped  = ['dt']
+    cols_dropped  = [day_col]
     for col in cols:
         if col in df_transformed.columns:
             # Add 1 to avoid log(0); make sure all values are non-negative
@@ -918,7 +877,7 @@ def apply_log_transform(df, cols):
 
 ################# Create lagged variables for predictor  ##################
 
-def create_lag_variables(df, lag_variables, rows_lagged=-1, time_var='dt'):
+def create_lag_variables(df, lag_variables, rows_lagged=-1, time_var='date'):
     """
     Create lagged versions of selected variables, shifting values forward in time.
     
@@ -1058,6 +1017,8 @@ def make_wide_df(df, ignore_columns):
         wide_df = wide_df.drop(columns=['week'], axis=1)
     if 'day' in wide_df.columns:
             wide_df = wide_df.drop(columns=['day'], axis=1)
+    if 'date' in wide_df.columns:
+        wide_df = wide_df.drop(columns=['day'], axis=1)
     wide_df = wide_df.drop_duplicates()
 
         
