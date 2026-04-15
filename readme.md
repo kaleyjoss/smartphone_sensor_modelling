@@ -1,5 +1,4 @@
 
-```markdown
 # BRIGHTEN Depression Prediction Pipeline
 
 A machine learning pipeline for predicting depression severity (PHQ-9) from passive smartphone sensing and ecological momentary assessment (EMA) data, using the open-access BRIGHTEN V1 and V2 datasets.
@@ -208,8 +207,3 @@ After training, `shap.Explainer` is applied to the best model per fold. SHAP val
 - The `GroupMeanRegressor` requires manual `groups` passing and does not use `cross_validate` directly.
 - A commented-out PHQ-9 baseline comparison block is present for benchmarking against baseline survey alone.
 - Memory is managed with `gc.collect()` between SHAP runs due to large model sizes.
-```
-
----
-
-These are ready to copy into your repo. Want me to retry writing them to files once the container becomes available, or bundle them into a single document?
