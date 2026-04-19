@@ -6,16 +6,16 @@ import os
 PROJ = os.path.join(os.getcwd(), "..")
 
 # Project folders
-DATA = os.path.join(PROJ, "data")
+DATA_FOLDER = os.path.join(PROJ, "data")
 SCRIPTS = os.path.join(PROJ, "data")
 NB = os.path.join(PROJ, "data")
 PIPE = os.path.join(PROJ, "pipeline")
 RESULTS = os.path.join(PROJ, "results")
 
 # Data folders
-RAW = os.path.join(DATA, "raw")
-DFS = os.path.join(DATA, "dfs")
-SUB_DFS = os.path.join(DATA, "sub_dfs")
+RAW = os.path.join(DATA_FOLDER, "raw")
+DATA = os.path.join(DATA_FOLDER, "dfs")
+SUB_DFS = os.path.join(DATA_FOLDER, "sub_dfs")
 
 # Specific data files
 V1_DAY_RAW        = os.path.join(DATA, "v1_day_raw.csv")
