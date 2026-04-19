@@ -1,0 +1,37 @@
+Dataset,Regressor,Metric,Score
+v1_day,CatBoost,mae,0.8534840707669276
+v1_day,CatBoost,pmc,0.1807769352434459
+v1_day,CatBoost,r2,-0.08026749057221005
+v1_day,Hist Gradient Boost,mae,0.857084295162021
+v1_day,Hist Gradient Boost,pmc,0.17979519298440264
+v1_day,Hist Gradient Boost,r2,-0.08497297974088291
+v1_day,XGBoost,mae,0.8801034622822955
+v1_day,XGBoost,pmc,0.1808601738674871
+v1_day,XGBoost,r2,-0.12271495173160063
+v1_week,CatBoost,mae,0.8534840707669276
+v1_week,CatBoost,pmc,0.1807769352434459
+v1_week,CatBoost,r2,-0.08026749057221005
+v1_week,Hist Gradient Boost,mae,0.857084295162021
+v1_week,Hist Gradient Boost,pmc,0.17979519298440264
+v1_week,Hist Gradient Boost,r2,-0.08497297974088291
+v1_week,XGBoost,mae,0.8801034622822955
+v1_week,XGBoost,pmc,0.1808601738674871
+v1_week,XGBoost,r2,-0.12271495173160063
+v2_day,CatBoost,mae,0.7720552208862043
+v2_day,CatBoost,pmc,0.2564781328657833
+v2_day,CatBoost,r2,0.029438035344231506
+v2_day,Hist Gradient Boost,mae,0.7994204844760708
+v2_day,Hist Gradient Boost,pmc,0.18259305072505114
+v2_day,Hist Gradient Boost,r2,-0.040985928044365405
+v2_day,XGBoost,mae,0.8075725269727994
+v2_day,XGBoost,pmc,0.2401367200960049
+v2_day,XGBoost,r2,-0.0871650004901332
+v2_week,CatBoost,mae,0.7720552208862043
+v2_week,CatBoost,pmc,0.2564781328657833
+v2_week,CatBoost,r2,0.029438035344231506
+v2_week,Hist Gradient Boost,mae,0.7994204844760708
+v2_week,Hist Gradient Boost,pmc,0.18259305072505114
+v2_week,Hist Gradient Boost,r2,-0.040985928044365405
+v2_week,XGBoost,mae,0.8075725269727994
+v2_week,XGBoost,pmc,0.2401367200960049
+v2_week,XGBoost,r2,-0.0871650004901332

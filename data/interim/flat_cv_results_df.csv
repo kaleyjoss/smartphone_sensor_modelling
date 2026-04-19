@@ -1,0 +1,241 @@
+,Dataset,Regressor,Metric,Score
+0,v1_week,Decision Tree,r2,-1.2097192291012915
+1,v1_week,Decision Tree,r2,-0.7132694940621338
+2,v1_week,Decision Tree,r2,-0.826389499009966
+3,v1_week,Decision Tree,r2,-0.6551036765376306
+4,v1_week,Decision Tree,r2,-0.5170313697246478
+5,v1_week,Decision Tree,mae,1.1691059066167968
+6,v1_week,Decision Tree,mae,1.0178206268974281
+7,v1_week,Decision Tree,mae,1.0434726093308737
+8,v1_week,Decision Tree,mae,1.029635711853631
+9,v1_week,Decision Tree,mae,0.988339983493696
+10,v1_week,Decision Tree,pmc,-0.0025562586050042538
+11,v1_week,Decision Tree,pmc,0.17296322063154024
+12,v1_week,Decision Tree,pmc,0.13460830778743305
+13,v1_week,Decision Tree,pmc,0.20365117671715915
+14,v1_week,Decision Tree,pmc,0.21117581405790525
+15,v1_week,Hist Gradient Tree,r2,0.0849853088280842
+16,v1_week,Hist Gradient Tree,r2,0.06736677332841134
+17,v1_week,Hist Gradient Tree,r2,0.2077732146132374
+18,v1_week,Hist Gradient Tree,r2,-0.037630413409774244
+19,v1_week,Hist Gradient Tree,r2,0.09345401929774266
+20,v1_week,Hist Gradient Tree,mae,0.7645673571787126
+21,v1_week,Hist Gradient Tree,mae,0.7746291367375769
+22,v1_week,Hist Gradient Tree,mae,0.6840838289499367
+23,v1_week,Hist Gradient Tree,mae,0.7773294306790524
+24,v1_week,Hist Gradient Tree,mae,0.7881084280584736
+25,v1_week,Hist Gradient Tree,pmc,0.3393174535132911
+26,v1_week,Hist Gradient Tree,pmc,0.3502071203436068
+27,v1_week,Hist Gradient Tree,pmc,0.4674273517038147
+28,v1_week,Hist Gradient Tree,pmc,0.25189785376410834
+29,v1_week,Hist Gradient Tree,pmc,0.33368047673475365
+30,v1_week,Random Forest,r2,0.07889741886713153
+31,v1_week,Random Forest,r2,0.10730603294713015
+32,v1_week,Random Forest,r2,0.18760182481691545
+33,v1_week,Random Forest,r2,-0.012375626772155757
+34,v1_week,Random Forest,r2,0.1442500484657373
+35,v1_week,Random Forest,mae,0.7614264671952798
+36,v1_week,Random Forest,mae,0.7629148730297808
+37,v1_week,Random Forest,mae,0.6990742078831241
+38,v1_week,Random Forest,mae,0.7706038976151836
+39,v1_week,Random Forest,mae,0.7712151342098141
+40,v1_week,Random Forest,pmc,0.3306330169236781
+41,v1_week,Random Forest,pmc,0.3626767352828455
+42,v1_week,Random Forest,pmc,0.43613105327816915
+43,v1_week,Random Forest,pmc,0.25200861565440447
+44,v1_week,Random Forest,pmc,0.3839897361078825
+45,v1_week,XGBoost,r2,-0.0604682693267371
+46,v1_week,XGBoost,r2,-0.03955330054694639
+47,v1_week,XGBoost,r2,0.11186742023090679
+48,v1_week,XGBoost,r2,-0.15589975063400585
+49,v1_week,XGBoost,r2,0.042278778216898294
+50,v1_week,XGBoost,mae,0.8196961353071711
+51,v1_week,XGBoost,mae,0.8306008999626265
+52,v1_week,XGBoost,mae,0.7430999260032477
+53,v1_week,XGBoost,mae,0.8383263418194936
+54,v1_week,XGBoost,mae,0.8103852025156666
+55,v1_week,XGBoost,pmc,0.2660930332223461
+56,v1_week,XGBoost,pmc,0.30006357614999557
+57,v1_week,XGBoost,pmc,0.414160290838125
+58,v1_week,XGBoost,pmc,0.2010887502217188
+59,v1_week,XGBoost,pmc,0.30457580606960355
+60,v1_week,AdaBoost,r2,0.14047533849541438
+61,v1_week,AdaBoost,r2,0.07953471571985693
+62,v1_week,AdaBoost,r2,0.19295817300887708
+63,v1_week,AdaBoost,r2,0.06555831211195029
+64,v1_week,AdaBoost,r2,0.152959009162435
+65,v1_week,AdaBoost,mae,0.7618805165385445
+66,v1_week,AdaBoost,mae,0.774114332953979
+67,v1_week,AdaBoost,mae,0.7002144168252267
+68,v1_week,AdaBoost,mae,0.7530606347388705
+69,v1_week,AdaBoost,mae,0.7697018826434323
+70,v1_week,AdaBoost,pmc,0.3918987245483726
+71,v1_week,AdaBoost,pmc,0.28615850684308897
+72,v1_week,AdaBoost,pmc,0.47055841403789334
+73,v1_week,AdaBoost,pmc,0.27525219877319373
+74,v1_week,AdaBoost,pmc,0.39374654690402805
+75,v1_week,Gradient Boost,r2,0.13465685660472182
+76,v1_week,Gradient Boost,r2,0.11989492421094272
+77,v1_week,Gradient Boost,r2,0.2182324147673208
+78,v1_week,Gradient Boost,r2,0.022914348790990635
+79,v1_week,Gradient Boost,r2,0.15787909193197014
+80,v1_week,Gradient Boost,mae,0.7497594479598674
+81,v1_week,Gradient Boost,mae,0.7533903578470051
+82,v1_week,Gradient Boost,mae,0.6866109352555999
+83,v1_week,Gradient Boost,mae,0.7525609832570413
+84,v1_week,Gradient Boost,mae,0.7554278789628693
+85,v1_week,Gradient Boost,pmc,0.37933107986359116
+86,v1_week,Gradient Boost,pmc,0.36795642859979405
+87,v1_week,Gradient Boost,pmc,0.4727388289393476
+88,v1_week,Gradient Boost,pmc,0.26884974932144867
+89,v1_week,Gradient Boost,pmc,0.3991171537233329
+90,v1_week,Bagging,r2,0.008187200664297678
+91,v1_week,Bagging,r2,0.04428794444832029
+92,v1_week,Bagging,r2,0.1314295859194058
+93,v1_week,Bagging,r2,-0.03940201992499759
+94,v1_week,Bagging,r2,0.10488381733748164
+95,v1_week,Bagging,mae,0.7922948236083122
+96,v1_week,Bagging,mae,0.794350494460089
+97,v1_week,Bagging,mae,0.7166492485302285
+98,v1_week,Bagging,mae,0.7710510480543953
+99,v1_week,Bagging,mae,0.788538885965847
+100,v1_week,Bagging,pmc,0.28619147299463465
+101,v1_week,Bagging,pmc,0.3276892769387609
+102,v1_week,Bagging,pmc,0.39032298937078846
+103,v1_week,Bagging,pmc,0.2759991315435887
+104,v1_week,Bagging,pmc,0.3680294571279782
+105,v1_week,CatBoost,r2,0.1265760558533292
+106,v1_week,CatBoost,r2,0.019986461752749318
+107,v1_week,CatBoost,r2,0.21853882130298496
+108,v1_week,CatBoost,r2,-0.09996168910936509
+109,v1_week,CatBoost,r2,0.1274499567376972
+110,v1_week,CatBoost,mae,0.7371525553586077
+111,v1_week,CatBoost,mae,0.7937762934633402
+112,v1_week,CatBoost,mae,0.6965987303479154
+113,v1_week,CatBoost,mae,0.8052150426890338
+114,v1_week,CatBoost,mae,0.7691810268682784
+115,v1_week,CatBoost,pmc,0.3823497163074477
+116,v1_week,CatBoost,pmc,0.3011288700628083
+117,v1_week,CatBoost,pmc,0.471182147728156
+118,v1_week,CatBoost,pmc,0.18529937661059065
+119,v1_week,CatBoost,pmc,0.36953922656788685
+120,v2_week,Decision Tree,r2,-0.9846835913869136
+121,v2_week,Decision Tree,r2,-1.0735178131097483
+122,v2_week,Decision Tree,r2,-1.2829413342678722
+123,v2_week,Decision Tree,r2,-1.501866865730618
+124,v2_week,Decision Tree,r2,-1.0165109912843246
+125,v2_week,Decision Tree,mae,1.1300739848294086
+126,v2_week,Decision Tree,mae,1.1459668688378408
+127,v2_week,Decision Tree,mae,1.123104585096164
+128,v2_week,Decision Tree,mae,1.204522319670392
+129,v2_week,Decision Tree,mae,1.1623221791622258
+130,v2_week,Decision Tree,pmc,-0.03429419933682718
+131,v2_week,Decision Tree,pmc,-0.017842513566616227
+132,v2_week,Decision Tree,pmc,-0.05036880442582914
+133,v2_week,Decision Tree,pmc,-0.11223378364313256
+134,v2_week,Decision Tree,pmc,-0.008660573562609648
+135,v2_week,Hist Gradient Tree,r2,-0.17455250683135914
+136,v2_week,Hist Gradient Tree,r2,-0.2809731043137673
+137,v2_week,Hist Gradient Tree,r2,-0.1571803861189498
+138,v2_week,Hist Gradient Tree,r2,-0.4213484096465254
+139,v2_week,Hist Gradient Tree,r2,-0.1288058524537956
+140,v2_week,Hist Gradient Tree,mae,0.890654564189542
+141,v2_week,Hist Gradient Tree,mae,0.8899786829142814
+142,v2_week,Hist Gradient Tree,mae,0.8171787367036688
+143,v2_week,Hist Gradient Tree,mae,0.8998220352741748
+144,v2_week,Hist Gradient Tree,mae,0.8864067767360837
+145,v2_week,Hist Gradient Tree,pmc,-0.08693018465012137
+146,v2_week,Hist Gradient Tree,pmc,-0.11912459021925978
+147,v2_week,Hist Gradient Tree,pmc,-0.03086341175874082
+148,v2_week,Hist Gradient Tree,pmc,-0.17341231206488392
+149,v2_week,Hist Gradient Tree,pmc,-0.007759503332712546
+150,v2_week,Random Forest,r2,-0.06462228877691922
+151,v2_week,Random Forest,r2,-0.12311748069887662
+152,v2_week,Random Forest,r2,-0.028760956146562044
+153,v2_week,Random Forest,r2,-0.15286497539242583
+154,v2_week,Random Forest,r2,-0.03342108677340394
+155,v2_week,Random Forest,mae,0.8599132796479344
+156,v2_week,Random Forest,mae,0.839375375194855
+157,v2_week,Random Forest,mae,0.7891704450694202
+158,v2_week,Random Forest,mae,0.8113403584323917
+159,v2_week,Random Forest,mae,0.8514229437630754
+160,v2_week,Random Forest,pmc,-0.015063807735239763
+161,v2_week,Random Forest,pmc,-0.014329740039656716
+162,v2_week,Random Forest,pmc,0.060114992629101666
+163,v2_week,Random Forest,pmc,-0.09280191626504464
+164,v2_week,Random Forest,pmc,0.030700391928547774
+165,v2_week,XGBoost,r2,-0.3342854688906316
+166,v2_week,XGBoost,r2,-0.3117701931644934
+167,v2_week,XGBoost,r2,-0.31608048166365443
+168,v2_week,XGBoost,r2,-0.4632905882149283
+169,v2_week,XGBoost,r2,-0.19184181807807854
+170,v2_week,XGBoost,mae,0.9297029993708941
+171,v2_week,XGBoost,mae,0.891224992182065
+172,v2_week,XGBoost,mae,0.8719298161278284
+173,v2_week,XGBoost,mae,0.9189512820230626
+174,v2_week,XGBoost,mae,0.9145036330086018
+175,v2_week,XGBoost,pmc,-0.1348628571156883
+176,v2_week,XGBoost,pmc,-0.0759107838501179
+177,v2_week,XGBoost,pmc,-0.022117913619723185
+178,v2_week,XGBoost,pmc,-0.09076922837375939
+179,v2_week,XGBoost,pmc,0.052951450737866834
+180,v2_week,AdaBoost,r2,0.008625388819211599
+181,v2_week,AdaBoost,r2,-0.06814079946727047
+182,v2_week,AdaBoost,r2,0.013923978523999958
+183,v2_week,AdaBoost,r2,-0.03791585147891263
+184,v2_week,AdaBoost,r2,-0.0012407053123424383
+185,v2_week,AdaBoost,mae,0.843648848423836
+186,v2_week,AdaBoost,mae,0.834141964458236
+187,v2_week,AdaBoost,mae,0.7671421643851063
+188,v2_week,AdaBoost,mae,0.7816925108117249
+189,v2_week,AdaBoost,mae,0.8398434380489957
+190,v2_week,AdaBoost,pmc,0.09711759802760857
+191,v2_week,AdaBoost,pmc,-0.0930982732239874
+192,v2_week,AdaBoost,pmc,0.1305338410591932
+193,v2_week,AdaBoost,pmc,-0.01828536363436698
+194,v2_week,AdaBoost,pmc,0.05449413598958033
+195,v2_week,Gradient Boost,r2,-0.051650927722407314
+196,v2_week,Gradient Boost,r2,-0.12311454721100601
+197,v2_week,Gradient Boost,r2,-0.06099076029516248
+198,v2_week,Gradient Boost,r2,-0.16525039040314704
+199,v2_week,Gradient Boost,r2,0.00018493976387179423
+200,v2_week,Gradient Boost,mae,0.8538515771912645
+201,v2_week,Gradient Boost,mae,0.8370330332850504
+202,v2_week,Gradient Boost,mae,0.8008236137433035
+203,v2_week,Gradient Boost,mae,0.8281120058463646
+204,v2_week,Gradient Boost,mae,0.8323745613864434
+205,v2_week,Gradient Boost,pmc,0.02081809184816981
+206,v2_week,Gradient Boost,pmc,-0.04261523777275501
+207,v2_week,Gradient Boost,pmc,0.008855540836975012
+208,v2_week,Gradient Boost,pmc,-0.07614625351623858
+209,v2_week,Gradient Boost,pmc,0.10664278366178788
+210,v2_week,Bagging,r2,-0.09010885163695681
+211,v2_week,Bagging,r2,-0.14235536378281988
+212,v2_week,Bagging,r2,-0.09905951156586434
+213,v2_week,Bagging,r2,-0.17019246814047007
+214,v2_week,Bagging,r2,-0.13436394872445434
+215,v2_week,Bagging,mae,0.8542260394332689
+216,v2_week,Bagging,mae,0.8399202792883338
+217,v2_week,Bagging,mae,0.8050448631237308
+218,v2_week,Bagging,mae,0.811451139008531
+219,v2_week,Bagging,mae,0.8839273294078237
+220,v2_week,Bagging,pmc,0.05298368587510431
+221,v2_week,Bagging,pmc,0.05631074151319869
+222,v2_week,Bagging,pmc,0.05722779630670797
+223,v2_week,Bagging,pmc,0.008343403099009432
+224,v2_week,Bagging,pmc,-0.009174942089971471
+225,v2_week,CatBoost,r2,-0.16557887360450363
+226,v2_week,CatBoost,r2,-0.19526747452003668
+227,v2_week,CatBoost,r2,-0.02941577369084114
+228,v2_week,CatBoost,r2,-0.2336874749623783
+229,v2_week,CatBoost,r2,-0.10429171122509628
+230,v2_week,CatBoost,mae,0.8792982882011855
+231,v2_week,CatBoost,mae,0.8722658370144949
+232,v2_week,CatBoost,mae,0.7754793514064622
+233,v2_week,CatBoost,mae,0.8393792997717106
+234,v2_week,CatBoost,mae,0.8786427417948934
+235,v2_week,CatBoost,pmc,-0.1038689523316286
+236,v2_week,CatBoost,pmc,-0.09275348722759007
+237,v2_week,CatBoost,pmc,0.1447410094657876
+238,v2_week,CatBoost,pmc,-0.11258137191094027
+239,v2_week,CatBoost,pmc,0.003843118775860681

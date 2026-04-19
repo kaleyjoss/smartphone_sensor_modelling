@@ -1,0 +1,13 @@
+# All magic numbers live here, not scattered in scripts
+min_days: 20
+study_window_days: 85
+coverage_threshold: 0.70
+test_size: 0.15
+split_random_seed: 42
+model_random_seed: 42
+n_cv_splits: 5
+
+n_clusters_v1_day: 5
+n_clusters_v2_day: 9
+n_clusters_v1_week: 6
+n_clusters_v2_week: 9

@@ -1,0 +1,39 @@
+column,encoding,label
+gender,0,Female
+gender,1,Male
+education,0,Community College
+education,1,Elementary School
+education,2,Graduate Degree
+education,3,High School
+education,4,University
+education,5,
+working,0,No
+working,1,Yes
+income_satisfaction,0,Am comfortable
+income_satisfaction,1,Can't make ends meet
+income_satisfaction,2,Have enough to get along
+income_satisfaction,3,
+income_lastyear,0,"100,000+"
+income_lastyear,1,"20,000-40,000"
+income_lastyear,2,"40,000-60,000"
+income_lastyear,3,"60,000-80,000"
+income_lastyear,4,"80,000-100,000"
+income_lastyear,5,"< $20,000"
+income_lastyear,6,
+marital_status,0,Married/Partner
+marital_status,1,Separated/Widowed/Divorced
+marital_status,2,Single
+race,0,African-American/Black
+race,1,American Indian/Alaskan Native
+race,2,Asian
+race,3,Hispanic/Latino
+race,4,More than one
+race,5,Native Hawaiian/other Pacific Islander
+race,6,Non-Hispanic White
+race,7,Other
+age_category,0,18-24
+age_category,1,25-34
+age_category,2,35-44
+age_category,3,45-54
+age_category,4,55-65
+age_category,5,

@@ -1,0 +1,84 @@
+stages:
+  clean:
+    cmd: python3 pipeline/01_cleaning.py
+    deps:
+      - pipeline/01_cleaning.py
+      - scripts/preprocessing.py
+      - scripts/variables.py
+      - data/raw/Passive Features Brighten V1.csv
+      - data/raw/Passive Features Brighten V2.csv
+      - data/raw/PHQ-9 - Depression.csv
+      - data/raw/Baseline Demographics.csv
+    outs:
+      - data/interim/v1_day_raw.csv
+      - data/interim/v2_day_raw.csv
+      - data/interim/v1_week_raw.csv
+      - data/interim/v2_week_raw.csv
+    params:
+      - params.yaml:
+          - min_days
+          - study_window_days
+          - coverage_threshold
+
+  split:
+    cmd: python3 pipeline/01b_train_test_split.py
+    deps:
+      - pipeline/01b_train_test_split.py
+      - data/interim/v1_day_raw.csv
+      - data/interim/v2_day_raw.csv
+    outs:
+      - data/interim/v1_day_trainval.csv
+      - data/interim/v1_day_test.csv
+      - data/interim/v2_day_trainval.csv
+      - data/interim/v2_day_test.csv
+    params:
+      - params.yaml:
+          - split_random_seed
+          - test_size
+
+  process:
+    cmd: python3 pipeline/02_processing.py
+    deps:
+      - pipeline/02_processing.py
+      - scripts/preprocessing.py
+      - data/interim/v1_day_trainval.csv
+      - data/interim/v1_day_test.csv
+      - data/interim/v2_day_trainval.csv
+      - data/interim/v2_day_test.csv
+    outs:
+      - data/interim/v1_day_trainval_imputed.csv
+      - data/interim/v1_day_test_imputed.csv
+      - data/interim/v2_day_trainval_imputed.csv
+      - data/interim/v2_day_test_imputed.csv
+      - data/interim/fitted_preprocessor.pkl   # save the fitted transformer
+
+  pca:
+    cmd: python3 pipeline/03_pca.py
+    deps:
+      - pipeline/03_pca.py
+      - scripts/feature_selection.py
+      - data/interim/v1_day_trainval_imputed.csv
+      - data/interim/v2_day_trainval_imputed.csv
+    outs:
+      - data/processed/v1_day_trainval_pca.csv
+      - data/processed/v2_day_trainval_pca.csv
+      - data/processed/pca_cluster_definitions.pkl
+    params:
+      - params.yaml:
+          - n_clusters_v1_day
+          - n_clusters_v2_day
+
+  models:
+    cmd: python3 pipeline/04_models.py
+    deps:
+      - pipeline/04_models.py
+      - scripts/modeling.py
+      - data/processed/v1_day_trainval_pca.csv
+      - data/processed/v2_day_trainval_pca.csv
+    outs:
+      - results/model_scores.csv
+    params:
+      - params.yaml:
+          - model_random_seed
+          - n_cv_splits
+
