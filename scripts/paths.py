@@ -1,4 +1,4 @@
-# config/paths.py
+# src/paths.py
 from pathlib import Path
 import os
 
@@ -21,6 +21,7 @@ SUB_DFS = os.path.join(DATA, "sub_dfs")
 V1_DAY_RAW        = os.path.join(DATA, "v1_day_raw.csv")
 V1_DAY_IMPUTED    = os.path.join(DATA, "v1_day_trainval_imputed.csv")
 V2_WEEK_IMPUTED   = os.path.join(DATA, "v2_week_trainval_imputed.csv")
+
 
 
 
