@@ -5,27 +5,24 @@ stages:
       - pipeline/01_cleaning.py
       - scripts/preprocessing.py
       - scripts/variables.py
-      - data/raw/Passive Features Brighten V1.csv
-      - data/raw/Passive Features Brighten V2.csv
-      - data/raw/PHQ-9 - Depression.csv
-      - data/raw/Baseline Demographics.csv
-    outs:
-      - data/interim/v1_day_raw.csv
-      - data/interim/v2_day_raw.csv
-      - data/interim/v1_week_raw.csv
-      - data/interim/v2_week_raw.csv
-    params:
-      - params.yaml:
-          - min_days
-          - study_window_days
-          - coverage_threshold
-
-  split:
-    cmd: python3 pipeline/01b_train_test_split.py
-    deps:
-      - pipeline/01b_train_test_split.py
-      - data/interim/v1_day_raw.csv
-      - data/interim/v2_day_raw.csv
+      - data/raw/Alcohol.csv 
+      - data/raw/AUDIT-C.csv 
+      - data/raw/Baseline Demographics.csv 
+      - data/raw/GAD - Anxiety.csv 
+      - data/raw/IMPACT Mania and Psychosis Screening.csv 
+      - data/raw/Mental Health Services.csv 
+      - data/raw/Other Health-related Apps Used.csv 
+      - data/raw/Passive Cluster Entries Brighten V2.csv 
+      - data/raw/Passive Features Brighten V1.csv 
+      - data/raw/Passive Mobility Features Brighten V2.csv 
+      - data/raw/Passive Phone Communication Features Brighten V2.csv 
+      - data/raw/Passive Weather Features Brighten V2.csv 
+      - data/raw/Patients Global Impression of Change Scale.csv 
+      - data/raw/PHQ-2 - Depression.csv data/raw/PHQ-9 - Baseline.csv 
+      - data/raw/PHQ-9 - Depression.csv 
+      - data/raw/SDS - Functional Impairment.csv data/raw/Sleep Quality.csv 
+      - data/raw/Study App Download Reason.csv 
+      - data/raw/Study App Satisfaction.csv
     outs:
       - data/interim/v1_day_trainval.csv
       - data/interim/v1_day_test.csv
@@ -33,8 +30,25 @@ stages:
       - data/interim/v2_day_test.csv
     params:
       - params.yaml:
+          - min_days
+          - study_window_days
+          - coverage_threshold
           - split_random_seed
           - test_size
+
+  process:
+    cmd: python3 pipeline/02_outcomes.py
+    deps:
+      - pipeline/02_outcomes.py
+      - data/interim/v1_day_weekFilled.csv
+      - data/interim/v1_day_weekFilled.csv
+      - data/interim/v2_day_weekFilled.csv
+      - data/interim/v2_day_weekFilled.csv
+    outs:
+      - data/interim/v1_day_outcomes.csv
+      - data/interim/v1_day_outcomes.csv
+      - data/interim/v2_day_outcomes.csv
+      - data/interim/v2_day_outcomes.csv
 
   process:
     cmd: python3 pipeline/02_processing.py
@@ -50,6 +64,10 @@ stages:
       - data/interim/v1_day_test_imputed.csv
       - data/interim/v2_day_trainval_imputed.csv
       - data/interim/v2_day_test_imputed.csv
+      - data/interim/v1_day_trainval_wide_slopeintercept_2wk_outcomes.csv
+      - data/interim/v1_day_test_wide_slopeintercept_2wk_outcomes.csv
+      - data/interim/v2_day_trainval_wide_slopeintercept_2wk_outcomes.csv
+      - data/interim/v2_day_test_wide_slopeintercept_2wk_outcomes.csv
       - data/interim/fitted_preprocessor.pkl   # save the fitted transformer
 
   pca:
@@ -69,9 +87,9 @@ stages:
           - n_clusters_v2_day
 
   models:
-    cmd: python3 pipeline/04_models.py
+    cmd: python3 pipeline/04_predictive_models.py
     deps:
-      - pipeline/04_models.py
+      - pipeline/04_predictive_models.py
       - scripts/modeling.py
       - data/processed/v1_day_trainval_pca.csv
       - data/processed/v2_day_trainval_pca.csv
