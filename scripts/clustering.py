@@ -15,7 +15,6 @@ from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import pdist, squareform
 from fastdtw import dtw
 import numpy as np
-from tslearn.metrics import cdist_dtw
 from sklearn.cluster import DBSCAN
 from tslearn.utils import to_time_series_dataset
 from sklearn.metrics import adjusted_rand_score

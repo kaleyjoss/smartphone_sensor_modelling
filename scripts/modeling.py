@@ -25,16 +25,6 @@ from sklearn import tree
 from sklearn.metrics import roc_auc_score
 
 
-############ Individual Random Forest Walk-forward Validation & TT Split Functions ##############
-# split a univariate dataset into train/test sets
-# based on a percentage of rows for test dataset by 'test_prc' (for example, 0.2)
-def train_test_split(data, n_test, verbose=False):
-	if verbose:
-		print(f'train_test_split: Train rows = {data.shape[0] - n_test}; Test rows = {n_test}')
-	
- # If data is already a NumPy array, use normal slicing
-	return data[:n_test, :], data[n_test:, :]
-
 
 
 

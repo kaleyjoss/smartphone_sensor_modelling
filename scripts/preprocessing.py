@@ -324,7 +324,7 @@ def simulate_missing_data(nonID_df, missing_percentage=0.1, random_state=None):
     # Randomly select some to mask (selecting indices in the list, based on length of non_nan_positions)
     if len(non_nan_positions) < cells_to_impute:
         print(f"Error: len(non_nan_positions) < cells_to_impute:{len(non_nan_positions)} < {cells_to_impute}")
-    selected_positions = np.random.choice(len(non_nan_positions), size=cells_to_impute, replace=True)
+    selected_positions = np.random.choice(len(non_nan_positions), size=cells_to_impute, replace=False)
     
     # Now iterate over the random locations (idx's) in the list given by the random choice above
     masked_values = []
@@ -485,8 +485,8 @@ def missforest_imputation_bysub(original_df, cols_to_impute, imputation_threshol
                     sub_imputed = imputer.fit_transform(df_mask_out)
                     
                     original_values, imputed_values, rmse_scaled, r2, p = compute_imputation_error(sub_og_clean, sub_imputed, df_mask_in)
-                    # If the r-squared of imputed data is over error threshold, keep the imputation
-                    if r2 != 999 and r2 > error_threshold or p < 0.05:
+                    # If the r-squared of imputed data is UNDER error threshold, keep the imputation
+                    if r2 != 999 and r2 < error_threshold or p > 0.05:
                         if verbose:
                             print(f"Using imputed values for {sub}: RMSE is {rmse_scaled},  R² is {r2}, p-value of KS test is {p}\n\n")
                             
@@ -1018,7 +1018,7 @@ def make_wide_df(df, ignore_columns):
     if 'day' in wide_df.columns:
             wide_df = wide_df.drop(columns=['day'], axis=1)
     if 'date' in wide_df.columns:
-        wide_df = wide_df.drop(columns=['day'], axis=1)
+        wide_df = wide_df.drop(columns=['date'], axis=1)
     wide_df = wide_df.drop_duplicates()
 
         
