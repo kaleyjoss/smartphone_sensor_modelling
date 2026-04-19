@@ -15,6 +15,7 @@ RESULTS = os.path.join(PROJ, "results")
 # Data folders
 RAW = os.path.join(DATA, "raw")
 DFS = os.path.join(DATA, "dfs")
+SUB_DFS = os.path.join(DATA, "sub_dfs")
 
 # Specific data files
 V1_DAY_RAW        = os.path.join(DATA, "v1_day_raw.csv")
