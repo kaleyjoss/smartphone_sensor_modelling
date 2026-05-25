@@ -317,7 +317,7 @@ def hier_agg_clustering(matrices, labels, n_clusters=2, linkage='ward', is_dict=
 
 
 ############# Plot Individual Networks ##################
-def plot_network(corr_matrix, title=None, threshold=0.5, scale_weights=False, fixed_positions=None, draw_edge_weights=False, display_num=0):
+def plot_network(corr_matrix, title=None, threshold=0.5, scale_weights=False, fixed_positions=None, draw_edge_weights=False, display=False, save_dir=''):
 	corr_matrix = zero_matrix(corr_matrix)
 	# If correlation matrix has nonzero values
 	if not (corr_matrix==0).all().all():
@@ -376,7 +376,14 @@ def plot_network(corr_matrix, title=None, threshold=0.5, scale_weights=False, fi
 		if title != None:
 			plt.title(title)
 		plt.tight_layout()
-		plt.show()
+		if len(save_dir) > 0:
+			plt.savefig(save_dir)
+		
+		if display==True:
+		    plt.show()
+		
+		
+
 
 
 
