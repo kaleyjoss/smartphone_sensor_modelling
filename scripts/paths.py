@@ -2,8 +2,8 @@
 from pathlib import Path
 import os
 
-# Whole folder. Assuming paths.py is in a subfolder
-PROJ = os.path.join(os.getcwd(), "..")
+# Whole folder. CHANGE for your system.
+PROJ = "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26"
 
 # Project folders
 DATA_FOLDER = os.path.join(PROJ, "data")
