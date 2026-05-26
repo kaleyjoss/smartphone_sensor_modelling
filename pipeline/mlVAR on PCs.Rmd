@@ -10,7 +10,7 @@ library(mlVAR)
 
 ## Change based on your path
 brighten_dir = "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/data/interim"
-output_dir =  "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/charts/mlVAR"
+output_dir =  "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/charts/mlVAR/trainval"
 
 ## estimator = The estimator to be used. "lmer" for sequential univariate multi-level estimation, "Mplus" for multivariate Bayesian estimation (requires Mplus), and "lm" for fixed effects estimation. 
 
@@ -20,8 +20,28 @@ output_dir =  "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EM
 
 ```
 
-## mlVAR Package
-### Choosing "Estimator" 
+
+# mlVAR Package
+
+---
+
+## Types of Networks 
+
+### Temporal Network
+The temporal network represents how variables predict each other across time points (from t to t+1).
+* Structure: It is a directed network where edges (arrows) indicate the predictive relationship between a variable at one measurement and another variable (or itself) at the next measurement.
+* Statistical Basis: Edges are based on Vector Autoregressive (VAR) coefficients. In an mlVAR framework, these are typically estimated through univariate multilevel regressions where each variable is predicted by the lagged versions of all variables in the network.
+* Interpretation: These edges represent carry-over effects or "inertia" (when a node predicts itself over time)
+
+### Contemporaneous Network
+* Structure: It is an undirected graphical model, specifically a Pairwise Markov Random Field (PMRF).
+* Statistical Basis: Edges represent partial correlations between the residuals (also called innovations) of the VAR model. These are the associations that remain after the temporal effects from the previous time point have been "partialled out" or controlled for.
+* Interpretation: This network captures dynamics that occur at faster timescales than the measurement interval (e.g., if measurements are taken every three hours, any interaction happening within minutes will appear here). An edge indicates that two variables are conditionally dependent at the same time point, given all other variables in the system
+
+
+--- 
+
+## Choosing "Estimator" 
 * "lmer" — Sequential Univariate Multi-level (Default)
   * Runs a separate mixed-effects regression (via lme4) for each variable, one at a time ("nodewise" estimation)
   * Models random effects — each person gets their own temporal coefficients, shrunk toward the group mean
@@ -46,11 +66,22 @@ Best for: when you need the most statistically rigorous, fully joint estimation 
   * No shrinkage, no person-level variance components
   * Best for: quick exploratory analysis, or when your sample is so small that mixed-effects models won't converge; not recommended for serious inference in ESM/EMA data
 
+---
 
+## Estimating Random Effects 
+General Differences Between Estimation Methods:
+* **"correlated"**: This method estimates correlated random slopes for within-cluster predictors. Theoretically, this allows for the possibility that an individual's specific deviation from the group average in one dynamic relationship (e.g., the effect of "worry" on "sadness") is statistically related to their deviation in another relationship.
+* **"orthogonal"**: This estimates uncuncorrelated (orthogonal) random slopes. While it still allows every individual to have their own unique dynamic network, it assumes that these individual differences are independent of one another across different edges in the network.
+* **"fixed"**: This estimates only a random intercept and assumes the dynamic relationships (the edges) are fixed across the entire sample. In this model, individuals can have different average levels of symptoms, but the way symptoms influence each other over time is assumed to be identical for everyone.
+* **"default"**: This is a pragmatic setting that chooses "correlated" when the number of variables is small (6 or fewer) and "orthogonal" for larger networks to manage computational demands [Source context].
 
-## Choosing `contemporaneous` Option
+**Notes**
+* *Bias and Misspecification*: The `mlVAR` package uses a stepwise estimation approach (nodewise regressions) rather than fitting a single joint model. This can lead to biases, particularly in the "between-person" network (how individuals' averages relate), which may not be resolved simply by choosing a different random effect structure.
+* *Significance Testing*: When performing inference on group differences (e.g., comparing patients to healthy controls), the choice of random effects can impact the sampling distribution. The sources recommend using permutation tests in these scenarios, as they are less sensitive to violations of distributional assumptions compared to parametric tests.
 
-This controls how the **residual correlation network** (what's happening *at the same time*, after removing lagged effects) is estimated.
+### Choosing `contemporaneous` Option
+
+This controls how the **residual correlation network** (what's correlated *within the measurement observation*, after removing lagged effects between periods) is estimated.
 
 | Option | What it does | Use when |
 |---|---|---|
@@ -61,9 +92,8 @@ This controls how the **residual correlation network** (what's happening *at the
 
 **Key decision:** Do you believe contemporaneous relationships **vary across people** (→ `correlated`/`orthogonal`) or are they **shared** (→ `fixed`)? And do you have enough data per person to support random effects?
 
----
 
-## Choosing `temporal` Option
+### Choosing `temporal` Option
 
 This controls how the **lag-1 regression coefficients** (how past predicts present) are structured across people.
 
@@ -82,9 +112,8 @@ Few obs/person ─────────────────────�
 ← more pooling/shrinkage          less pooling →
 ```
 
----
 
-## Practical guidance
+**Practical guidance**
 
 - **Small ESM study** (e.g. 30–50 obs/person, 5–10 people): `temporal = "orthogonal"`, `contemporaneous = "fixed"`
 - **Typical ESM study** (50–100 obs/person, 20–50 people, <6 vars): defaults (`temporal = "correlated"`, `contemporaneous = "correlated"`) are fine
@@ -92,62 +121,145 @@ Few obs/person ─────────────────────�
 - **Large N per person** (200+): `"unique"` becomes viable and gives you fully individual networks
 - **Convergence problems**: step down — `correlated` → `orthogonal` → `fixed`
 
+---
 
 
-
-```{r model}
-
-for (name in list("v1_day", "v2_day", "v1_week", "v2_week")) {
-  path <- file.path(brighten_dir, paste0(name, "_pca.csv"))
+```{r}
+model_file <- function(name) {
+  path <- file.path(brighten_dir, paste0(name, "_trainval_pca.csv"))
   df <- read.csv(path)
   pc_cols <- grep("^pc_", colnames(df), value = TRUE)
+  
   
   model <- mlVAR(df, vars = pc_cols, idvar = "num_id", lags = 1,
                  estimator = "lmer",
                  contemporaneous = "orthogonal", temporal = "orthogonal")
   
+  return(model)
+
+}
+
+save_plots <- function(name, model) {
   # Save fixed effects plots
+  res <- residuals(model)  # returns a data frame, one column per variable
+  write.csv(res, file.path(output_dir, paste0(name, "_residuals.csv")))
+
   for (type in c("temporal", "contemporaneous", "between")) {
+    
     png(file.path(output_dir, paste0(name, "_", type, ".png")), 
         width = 800, height = 800)
     plot(model, type = type, lag = 1)
-    dev.off()
+    
+    # Get all three network types as matrices
+    temporal_mean   <- model$results$Beta$mean        # group mean
+    write.csv(temporal_mean, file.path(output_dir, paste0(name, "_", type, "_mean.csv")))
+    
+    temporal_subject  <- model$results$Beta$subject     # per-person, array of matrices
+    write.csv(temporal_subject, file.path(output_dir, 'trainval', paste0(name, "_", type, "_subject.csv")))
   }
-  
-  # Save per-person temporal plots
-  #n_subjects <- length(unique(df$num_id))
-  #for (i in seq_len(n_subjects)) {
-  #  png(file.path(output_dir, paste0(name, "_temporal_subject", i, ".png")),
-  #      width = 800, height = 800)
-  #  plot(model, type = "temporal", subject = i, lag = 1)
-  #  dev.off()
-  #}
 }
 
+v1_day = model_file('v1_day')
+v2_day = model_file('v2_day')
+v1_week = model_file('v1_week')
+v2_week = model_file('v2_week')
+
+#save_plots('v1_day', v1_day)
+#save_plots('v2_day', v2_day)
+#save_plots('v1_week', v1_week)
+#save_plots('v2_week', v2_week)
+
 ```
 
-## R Markdown
+# Group Difference Testing
+* **FPR Inflation**: For fixed lagged effects, the observed FPR was often higher than the specified α (e.g., a test set at α=0.05 might yield an FPR of 0.07). Haslbeck attributed this to misspecification inherent in the two-step estimation approach of mlVAR.
+* **Increased Variance**: The study found that as real group differences in some parameters grew larger, the spread (variance) of the sampling distribution for other parameters (where no difference existed) also increased. Because the test does not account for this increased spread, it rejects the null hypothesis too often, leading to an FPR that is higher than the α threshold.
+* Alignment can also fail in the **opposite direction** (FPR deflation). For random effects variances near zero, the mlVAR algorithm often biases estimates away from zero. This creates a sampling distribution with an upwardly biased variance, making it nearly impossible to find a significant result at standard α levels, resulting in an observed FPR of 0 regardless of whether α is set to 0.01 or 0.10.
+
+```{r all-res}
+library(moments)
+
+# Testing assumptions of the parametric and permutation tests
+
+for (model in list(v1_day, v2_day, v1_week, v2_week)) {
+
+  res <- read.csv(file.path(output_dir, paste0(name, "_residuals.csv")))
+  pc_cols <- grep("^pc_", colnames(df), value = TRUE)
 
 
-```{r individuals}
- # Get all three network types as matrices
-temporal_fixed    <- model$results$Beta$mean        # group mean
-temporal_random   <- model$results$Beta$subject     # per-person, array of matrices
+  # PARAMETRIC VS PERMUTATION TESTS
+  # Visual checks
+  par(mfrow = c(2, length(pc_cols)))
+  for (v in pc_cols) {
+    hist(res[[v]], main = paste("Residuals:", v), breaks = 30)
+    qqnorm(res[[v]], main = v); qqline(res[[v]])
+  }
+  
+  # Formal test (Shapiro-Wilk, sensitive to large N — use with caution)
+  for (v in pc_cols) {
+    cat(v, ":", shapiro.test(sample(na.omit(res[[v]]), min(5000, sum(!is.na(res[[v]])))))$p.value, "\n")
+  }
+  
+  # Skewness and kurtosis
+  for (v in pc_cols) {
+    cat(v, "- skew:", skewness(na.omit(res[[v]])), 
+           "  kurt:", kurtosis(na.omit(res[[v]])), "\n")
+  }
+  
 
-# Plot a specific person's temporal network (e.g. person 3)
-plot(model, type = "temporal", subject = 3)
+  for (i in seq_along(pc_cols)) {
+    mod <- model$output[[1]][[pc_cols[i]]]
+    
+    if (is.null(mod)) {
+      cat("\n--- Variable:", pc_cols[i], "--- SKIPPED (NULL model)\n")
+      next
+    }
 
-# Or use getNet() for cleaner extraction
-fixed_net <- getNet(model, "temporal", subject = "mean")
-person3   <- getNet(model, "temporal", subject = 3)
+    re <- lme4::ranef(model$output[[1]][[pc_cols[i]]])$num_id
+    
+    cat("\n--- Variable:", pc_cols[i], "---\n")
+    for (j in seq_len(ncol(re))) {
+      vals <- re[[j]]
+      if (length(unique(vals)) < 3) {
+        cat(colnames(re)[j], ": skipped (no variance)\n")
+        next
+      }
+      sw <- shapiro.test(vals)
+      cat(colnames(re)[j], ": W =", round(sw$statistic, 3),
+          " p =", round(sw$p.value, 3), "\n")
+    }
+  }
+}
+
+  
+
+
+# Using permutation test
+
+```
+### Permutation Test
+Using permutation test because the S-W test and qqnorm plots and kurtosis show that the residuals are not normally distributed. 
+
+```{r permutation-test}
+library(mnet)
+
+name = 'v1_day'
+path <- file.path(brighten_dir, paste0(name, "_trainval_pca.csv"))
+df <- read.csv(path)
+pc_cols <- grep("^pc_", colnames(df), value = TRUE)
+cat(pc_cols)
+
+df$gender <- df$gender_0.0 + 1
+
+v1_day_gender <- mlVAR_GC(data = df,  vars = pc_cols, idvar = "num_id", groups = "gender", test = "permutation", paired = FALSE, contemporaneous = "orthogonal", temporal = "orthogonal", nP = 1000, nCores = 12, pbar = TRUE)
+
+
+
 ```
 
-## Including Plots
+```{r save}
+l_outlist <- list()
+l_outlist$GC <- output
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
