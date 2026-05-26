@@ -1,0 +1,153 @@
+---
+title: "mlVAR on PCs"
+output: html_document
+date: "2026-05-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mlVAR)
+
+## Change based on your path
+brighten_dir = "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/data/interim"
+output_dir =  "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/charts/mlVAR"
+
+## estimator = The estimator to be used. "lmer" for sequential univariate multi-level estimation, "Mplus" for multivariate Bayesian estimation (requires Mplus), and "lm" for fixed effects estimation. 
+
+## contemporaneous = How should the contemporaneous networks be estimated? These networks are always estimated post-hoc by investigating the residuals of the temporal models. "correlated" and "orthogonal" run second multi-level models in which the networks are estimated using node-wise estimation. "fixed" and "unique" simply correlate the residuals, either by computing one network for all subjects (fixed) or a single network per per subject. 
+
+## temporal = How should the temporal effects be estimated? "correlated" estimates correlated random effects, "orthogonal" estimates non-correlated random effects and "fixed" estimates a model in which only the intercept is random. Defaults to "correlated" when the number of variables is less than 6 and "orthogonal" otherwise. "unique" uses lm to estimate an unique model for each subject. 
+
+```
+
+## mlVAR Package
+### Choosing "Estimator" 
+* "lmer" — Sequential Univariate Multi-level (Default)
+  * Runs a separate mixed-effects regression (via lme4) for each variable, one at a time ("nodewise" estimation)
+  * Models random effects — each person gets their own temporal coefficients, shrunk toward the group mean
+  * Temporal and between-subject effects come directly from the models; contemporaneous effects are estimated post-hoc by correlating the residuals across equations
+  * The fitted model is technically misspecified with respect to a true joint multilevel VAR, since it uses sample means as proxies for population means and applies a disjoint pseudolikelihood approach — but it's fast, open-source, and the most widely used option Springer
+  * Best for: most applied research; good balance of speed, flexibility, and handling of individual differences
+
+
+* "Mplus" — Multivariate Bayesian Estimation
+  * Generates a Mplus model, runs the analysis, and reads results back into R; Mplus 8 is required CRAN
+  * Estimates all variables jointly (truly multivariate), not equation-by-equation
+  * Uses Bayesian MCMC (with iterations and chains arguments controlling the sampler)
+  * Can estimate random effects for contemporaneous relationships, which lmer cannot do properly — it is recommended to set contemporaneous = "fixed", though not required CRAN
+  * Does not support the dayvar argument — day structure must be handled manually via beepvar GitHub
+Best for: when you need the most statistically rigorous, fully joint estimation and have Mplus licensed
+
+
+* "lm" — Fixed Effects Only
+  * Runs plain OLS regression per variable, with no random effects
+  * Ignores between-person variation entirely — estimates one set of coefficients assumed to apply to everyone equally
+  * Faster and simpler, but treats all subjects as identical in their dynamics
+  * No shrinkage, no person-level variance components
+  * Best for: quick exploratory analysis, or when your sample is so small that mixed-effects models won't converge; not recommended for serious inference in ESM/EMA data
+
+
+
+## Choosing `contemporaneous` Option
+
+This controls how the **residual correlation network** (what's happening *at the same time*, after removing lagged effects) is estimated.
+
+| Option | What it does | Use when |
+|---|---|---|
+| `"correlated"` | 2nd-stage multilevel model, random effects **allowed to covary** | You have enough data per person and want to model *why* people differ in their contemporaneous structure |
+| `"orthogonal"` | 2nd-stage multilevel model, random effects **assumed independent** | Similar to above but faster/more stable; use when correlated version fails to converge |
+| `"fixed"` | One single contemporaneous network for **all subjects** | You assume everyone shares the same contemporaneous structure, or small N per person |
+| `"unique"` | Separate network **per subject** (just correlates that person's residuals) | Large N per person, you want fully individual networks, don't need group-level inference |
+
+**Key decision:** Do you believe contemporaneous relationships **vary across people** (→ `correlated`/`orthogonal`) or are they **shared** (→ `fixed`)? And do you have enough data per person to support random effects?
+
+---
+
+## Choosing `temporal` Option
+
+This controls how the **lag-1 regression coefficients** (how past predicts present) are structured across people.
+
+| Option | What it does | Use when |
+|---|---|---|
+| `"correlated"` | Random slopes, **allowed to covary** with each other | Default for <6 vars; you want the full random effects covariance structure |
+| `"orthogonal"` | Random slopes, **assumed independent** | Default for ≥6 vars; more stable with many variables, avoids estimating a huge covariance matrix |
+| `"fixed"` | **Only the intercept** is random; slopes are fixed across people | You don't believe temporal dynamics vary by person, or very few observations per person |
+| `"unique"` | Fits a **separate `lm` per person** | Very large N per person; you want fully individual models with no pooling/shrinkage |
+
+**Key decision axis:**
+
+```
+Few obs/person ──────────────────────────── Many obs/person
+"fixed"         "orthogonal"   "correlated"   "unique"
+← more pooling/shrinkage          less pooling →
+```
+
+---
+
+## Practical guidance
+
+- **Small ESM study** (e.g. 30–50 obs/person, 5–10 people): `temporal = "orthogonal"`, `contemporaneous = "fixed"`
+- **Typical ESM study** (50–100 obs/person, 20–50 people, <6 vars): defaults (`temporal = "correlated"`, `contemporaneous = "correlated"`) are fine
+- **Many variables (≥6)**: `temporal = "orthogonal"` to avoid the covariance matrix explosion (p² parameters)
+- **Large N per person** (200+): `"unique"` becomes viable and gives you fully individual networks
+- **Convergence problems**: step down — `correlated` → `orthogonal` → `fixed`
+
+
+
+
+```{r model}
+
+for (name in list("v1_day", "v2_day", "v1_week", "v2_week")) {
+  path <- file.path(brighten_dir, paste0(name, "_pca.csv"))
+  df <- read.csv(path)
+  pc_cols <- grep("^pc_", colnames(df), value = TRUE)
+  
+  model <- mlVAR(df, vars = pc_cols, idvar = "num_id", lags = 1,
+                 estimator = "lmer",
+                 contemporaneous = "orthogonal", temporal = "orthogonal")
+  
+  # Save fixed effects plots
+  for (type in c("temporal", "contemporaneous", "between")) {
+    png(file.path(output_dir, paste0(name, "_", type, ".png")), 
+        width = 800, height = 800)
+    plot(model, type = type, lag = 1)
+    dev.off()
+  }
+  
+  # Save per-person temporal plots
+  #n_subjects <- length(unique(df$num_id))
+  #for (i in seq_len(n_subjects)) {
+  #  png(file.path(output_dir, paste0(name, "_temporal_subject", i, ".png")),
+  #      width = 800, height = 800)
+  #  plot(model, type = "temporal", subject = i, lag = 1)
+  #  dev.off()
+  #}
+}
+
+```
+
+## R Markdown
+
+
+```{r individuals}
+ # Get all three network types as matrices
+temporal_fixed    <- model$results$Beta$mean        # group mean
+temporal_random   <- model$results$Beta$subject     # per-person, array of matrices
+
+# Plot a specific person's temporal network (e.g. person 3)
+plot(model, type = "temporal", subject = 3)
+
+# Or use getNet() for cleaner extraction
+fixed_net <- getNet(model, "temporal", subject = "mean")
+person3   <- getNet(model, "temporal", subject = 3)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
