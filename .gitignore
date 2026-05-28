@@ -24,4 +24,7 @@ __pycache__/
 # Environment variables / Secrets
 .env
 
+# Claude outputs
+/claude
+
 
