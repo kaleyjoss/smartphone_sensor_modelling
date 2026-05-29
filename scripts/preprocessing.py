@@ -149,6 +149,9 @@ def combine_same_timeperiod(df, id_col='num_id', combine_on_col=None, dt_col=Non
     '''
 
     days_subjects = []
+    if dt_col != None:
+        df[f'{dt_col}_all'] = ''
+
 
     # Step 1: Loop over each participant
     for subject, sub_df in df.groupby(id_col, as_index=False):
@@ -170,11 +173,11 @@ def combine_same_timeperiod(df, id_col='num_id', combine_on_col=None, dt_col=Non
             for col in sub_df.columns if col != dt_col
         }
 
-        # Step 3: Override the dt column to collect all timestamps as a joined string
+        # Step 3: add another 'dt_all column to collect all timestamps as a joined string
         # so that if two rows share the same day, both timestamps are preserved
         if dt_col != None:
             if dt_col in sub_df.columns:
-                aggregation_functions[dt_col] = lambda x: ', '.join(x.astype(str))
+                aggregation_functions[f'{dt_col}_all'] = lambda x: ', '.join(x.astype(str))
 
         # Step 4: Group by date (combine_on_col) and apply the aggregation functions
         avg_df = sub_df.groupby(combine_on_col, as_index=False).agg(aggregation_functions)
@@ -187,6 +190,7 @@ def combine_same_timeperiod(df, id_col='num_id', combine_on_col=None, dt_col=Non
     # Step 6: Concatenate all subjects into a single DataFrame
     days_df = pd.concat(days_subjects)
     days_df = days_df.reset_index(drop=True)
+
 
     return days_df
 

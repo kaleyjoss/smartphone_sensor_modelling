@@ -190,7 +190,7 @@ def average_matrix(symptom_matrices):
 
 
 
-def make_symptom_matrices(df, ignore_cols, num_to_plot=0, column_order=None):
+def make_symptom_matrices(df, ignore_cols=None, num_to_plot=0):
 	symptom_matrices = {}
 	flattened_matrices = {}
 
@@ -200,12 +200,12 @@ def make_symptom_matrices(df, ignore_cols, num_to_plot=0, column_order=None):
 	count=0
 	for sub in df['num_id'].unique():
 		data = df[df['num_id']==sub] # filter for each specific sub
-		# keep only numerical/changing columns
-		keep_columns = list(set(df.columns.to_list()) - set(ignore_cols))
-		if column_order:
-			data = data[column_order]
-		else:
-			data = data[keep_columns] 
+		# keep only chosen columns
+		keep_columns = list(set(df.columns.to_list()))
+		if ignore_cols!=None:
+		    keep_columns = list(set(df.columns.to_list()) - set(ignore_cols))
+		data = data[keep_columns] 
+		data = data.sort_index(axis=1)
 
 		# transform into correlation matrix
 		correlation_matrix = data.corr() 
@@ -230,14 +230,14 @@ def make_symptom_matrices(df, ignore_cols, num_to_plot=0, column_order=None):
 			if num_to_plot>0:
 				if count<num_to_plot:
 					# # Heatmap
-					plt.figure(figsize=(16, 16))
+					plt.figure(figsize=(5,5))
 					sns.heatmap(correlation_matrix, annot=False, cmap='coolwarm', fmt='.1f', linewidths=0.5)
 					plt.title(f"Subject {sub}: Correlation Matrix")
 					plt.show()  
 
 					# Line/Scatter plot
 					x = np.arange(len(vector))
-					plt.figure(figsize=(10, 6))
+					plt.figure(figsize=(3, 4))
 					plt.title(f"Subject {sub}: Plot of condensed vector (flattened matrix)")
 					plt.scatter(x, vector, label="Points", color="blue")
 					plt.show() 

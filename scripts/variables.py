@@ -16,11 +16,13 @@ phq9_base = ['phq9_1_base','phq9_2_base','phq9_3_base','phq9_4_base','phq9_5_bas
 clinical = ['cid','bin_clin','bipolar','scz','screen_1','screen_2','screen_3','screen_4']
 demographics = ['gender','education','working','income_satisfaction',
                 'incomelastyear','marital_status','race','age',
-                'heard_about_us','device','startdate','study_arm', 'study']
+                'heard_about_us','device','startdate','study_arm', 'study', 
+                'income_lastyear','user_phone_type']
 alc_cols = ['alc_1','alc_2','alc_3','alc_sum','alc_cat']
 mhs_cols = ['mhs_1','mhs_2','mhs_3','mhs_4','mhs_5','mhs_sum']
+cohort_cols = ['cohort_Akili', 'cohort_Health tips', 'cohort_PST']
 
-baseline_cols = gad_cols + phq9_base + clinical + demographics + alc_cols + mhs_cols
+baseline_cols = gad_cols + phq9_base + clinical + demographics + alc_cols + mhs_cols + cohort_cols
 
 
 ## Variables from Weekly Surveys
@@ -77,9 +79,9 @@ daily_cols_v1 = ['aggregate_communication', 'call_count',
 
 daily_v2_sensor = ['distance_walking', 'distance_active', 'hours_active', 
         'distance_powered_vehicle', 'hours_powered_vehicle',
-       'hours_high_speed_transportation', 
+       'hours_high_speed_transportation', 'hours_walking',
        'distance_high_speed_transportation',
-       'location_variance', 'came_to_work','hours_of_sleep']
+       'location_variance', 'came_to_work','hours_of_sleep', 'hours_stationary', 'hours_stationary_nhw']
 
 daily_v2_sensor_hr = [f'{col}_hr' for col in daily_v2_sensor if col != 'came_to_work']
 
@@ -102,7 +104,7 @@ daily_v2_common = ['distance_walking', 'hours_active', 'distance_active',
           'hours_stationary', 'hours_stationary_nhw','hours_walking']
 
 daily_cols_v2 = daily_v2_sensor + daily_v2_phone + daily_v2_weather
-daily_cols_v2_hr = daily_v2_sensor + daily_v2_phone + daily_v2_weather
+daily_cols_v2_and_hr = daily_v2_sensor+ daily_v2_sensor_hr + daily_v2_phone + daily_v2_weather
 
 daily_misc_cols = 'hours_accounted_for'
 mobility_cols = ['mobility','mobility_radius']
@@ -112,12 +114,11 @@ numeric_cols = daily_cols_v1 + daily_v2_sensor_hr + daily_v2_phone + phq2_cols
 passive_cols = daily_cols_v1 + daily_v2_sensor_hr + daily_v2_phone
 
 
-all_daily_cols = phq2_cols + daily_cols_v1 + daily_cols_v2_hr
+all_daily_cols = phq2_cols + daily_cols_v1 + daily_cols_v2_and_hr
 
 
 ## ALL
 all_cols = id_columns + baseline_cols + weekly_cols + all_daily_cols
-
 
 
 # By content
@@ -133,6 +134,14 @@ mobility_cols_v2 = ['mobility', 'mobility_radius','distance_walking',
 
 places_cols_v2 = ['came_to_work','distance_high_speed_transportation','hours_high_speed_transportation', 
        'hours_powered_vehicle', 'location_variance','distance_powered_vehicle','hours_of_sleep']
+
+
+
+##### DROPPING for feature selection ########
+drop_corr_cols_v1 = ['aggregate_communication', 'sms_length']
+drop_corr_cols_v2 = ['distance_walking_hr', 'distance_high_speed_transportation_hr', 'distance_powered_vehicle_hr', 'distance_active_hr']
+keep_weather = ["dew_point_median", "temp_median", "precip_sum"]
+
 
 
 
