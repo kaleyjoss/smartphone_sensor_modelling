@@ -141,8 +141,9 @@ places_cols_v2 = ['came_to_work','distance_high_speed_transportation','hours_hig
 drop_corr_cols_v1 = ['aggregate_communication', 'sms_length']
 drop_corr_cols_v2 = ['distance_walking_hr', 'distance_high_speed_transportation_hr', 'distance_powered_vehicle_hr', 'distance_active_hr']
 keep_weather = ["dew_point_median", "temp_median", "precip_sum"]
-
-
+drop_weather = [col for col in daily_v2_weather if col not in keep_weather]
+fully_missing_cols = ['hours_stationary','hours_stationary_nhw']
+drop_cols_for_feature_selection = drop_corr_cols_v1 + drop_corr_cols_v2 + drop_weather + fully_missing_cols
 
 
 # df_list_all = df_names + aggregate_dfs

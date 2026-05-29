@@ -399,8 +399,11 @@ def pca_on_clusters(df, cluster_dict, n_clusters, n_components=1, wide=False, he
 			print(f"Skipping cluster {i}: No variables assigned.")
 			continue
 
-		print(f'Cols for cluster {i}: {keep_columns}')
+		print(f'Cols applied for cluster {i}: {keep_columns}')
 		df_cluster_cols = df[keep_columns].dropna()
+		if len(df_cluster_cols) == 0:
+			print('ERROR: ^^ this cluster had 0 rows after dropna()')
+			continue
 		df_cluster_meta = df.loc[df_cluster_cols.index, ['num_id', 'day']].reset_index(drop=True)
 		df_cluster_cols = df_cluster_cols.reset_index(drop=True)
 
