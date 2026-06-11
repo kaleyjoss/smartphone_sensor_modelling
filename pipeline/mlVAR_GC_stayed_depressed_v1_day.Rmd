@@ -1,0 +1,317 @@
+---
+title: "mlVAR_GC_stayed_depressed"
+output: html_document
+date: "2026-05-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(mnet)
+library(dplyr)
+library(mlVAR)
+library(tidyverse)
+
+name = "v1_day"
+model = "lme"
+step = 'transformed' #######step options: imputed, transformed, pca
+
+
+# stayed_depressed: 
+  # 1 = People who stayed not-depressed from baseline to end
+  # 2 = People who stayed depressed from baseline to end
+  # missing = people who changed category from baseline to end
+
+
+brighten_dir = "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/data/interim"
+output_dir =  "/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/charts/mlVAR/trainval"
+
+features <- list(
+  v1_day = list(anova = c("aggregate_communication","mobility","mobility_radius",
+                          "sms_length","sms_count","missed_interactions",
+                          "call_count","call_duration", "interaction_diversity", "phq2_1","phq2_2"), 
+                lme = c("interaction_diversity","call_count","unreturned_calls","mobility",
+                        "mobility_radius","sms_count","missed_interactions","call_duration", "phq2_1","phq2_2")
+                ),
+  v1_week = list(anova = c("aggregate_communication","mobility","mobility_radius",
+                          "sms_length","sms_count","unreturned_calls","missed_interactions",
+                          "call_count","call_duration", "interaction_diversity", "phq2_1","phq2_2","phq9_sum"), 
+                lme = c("interaction_diversity","call_count","unreturned_calls","mobility",
+                        "mobility_radius","sms_count","missed_interactions","call_duration",
+                        "phq2_1","phq2_2","phq9_sum")
+                )
+)
+
+cols = features[[name]][[model]]
+path <- file.path(brighten_dir, paste0(name, "_trainval_", step, "_outcomes.csv"))
+df <- read.csv(path)
+df <- df[!is.na(df$stayed_depressed), ] #drop missing values, people who changed over time.
+table(df$stayed_depressed)
+
+df_cols = df %>% select(num_id,stayed_depressed, all_of(cols))
+
+
+
+
+
+```
+
+
+```{r checking-v1day}
+
+# Check values
+# Check for infinite values
+sapply(df[, cols], function(x) sum(is.infinite(x)))
+
+# Check for NaN
+sapply(df[, cols], function(x) sum(is.nan(x)))
+
+# Check for NA
+sapply(df[, cols], function(x) sum(is.na(x)))
+
+
+# Check for zero-variance columns within a person
+# If a person never varies on a variable, regression fails
+#zero_var = df %>%
+ # group_by(num_id) %>%
+  #summarise(across(all_of(cols), sd, na.rm = TRUE)) %>%
+  #summarise(across(all_of(cols), function(x) sum(x == 0, na.rm = TRUE))) %>%
+  #filter(if_all(all_of(cols), function(x) x < 0.5)) %>%
+  #pull(num_id)
+
+# Check NA rate per person per variable
+perc_missing_mobility = df %>%
+  group_by(num_id) %>%
+  summarise(
+    mob_na = sum(is.na(mobility)),
+    mob_n  = n(),
+    mob_pct = mob_na / mob_n
+  ) %>%
+  filter(mob_pct > 0.5) %>%
+  arrange(desc(mob_pct))
+
+# Check NA rate per person per variable
+perc_missing_mobility_r = df %>%
+  group_by(num_id) %>%
+  summarise(
+    mobr_na = sum(is.na(mobility_radius)),
+    mobr_n  = n(),
+    mobr_pct = mobr_na / mobr_n
+  ) %>%
+  filter(mobr_pct > 0.5) %>%
+  arrange(desc(mobr_pct))
+
+
+# Check NA rate per person per variable
+perc_missing_calls = df %>%
+  group_by(num_id) %>%
+  summarise(
+    uc_na = sum(is.na(unreturned_calls)),
+    uc_n  = n(),
+    uc_pct = uc_na / uc_n
+  ) %>%
+  filter(uc_pct > 0.5) %>%
+  arrange(desc(uc_pct))
+
+
+
+
+# Check NA rate per person per variable
+# Remove persons with >50% NA on any variable
+nonNA_ids <- df %>%
+  group_by(num_id) %>%
+  summarise(across(all_of(cols), function(x) mean(is.na(x)))) %>%
+  filter(if_all(all_of(cols), function(x) x < 0.7)) %>%
+  pull(num_id)
+
+
+#std_results %>%
+#  pivot_longer(-num_id, names_to = "column", values_to = "sd") %>%
+#  filter(sd == 0 | is.na(sd)) %>%
+#  select(num_id, column)
+
+# Find zero-var columns (all std values are 0 or NA)
+#zero_var_cols <- std_results %>%
+#  select(-num_id) %>%
+#  summarise(across(everything(), ~ all(. == 0 | is.na(.)))) %>%
+#  pivot_longer(everything()) %>%
+#  filter(value == TRUE) %>%
+#  pull(name)
+
+# print(zero_var_cols)
+
+
+
+# Drop participants with a var >50% missing and report number dropped
+df_clean <- df_cols %>% filter(num_id %in% nonNA_ids)
+cat(n_distinct(df_clean$num_id), "participants. Removed", n_distinct(df$num_id) - n_distinct(df_clean$num_id), "for having a var with >50% NaN. .\n")
+
+# Drop participants with a var with 0 variation and report number dropped
+# df_clean <- df_clean %>% filter(!num_id %in% zero_var_ids)
+# cat(n_distinct(df_clean$num_id), "participants. Removed", n_distinct(df$num_id) - n_distinct(df_clean$num_id), "for having zero-var variables.\n")
+
+num_participants = n_distinct(df_clean$num_id)
+
+```
+
+
+```{r check-cleaned-v1}
+# Simulate what mlVAR does - check if lagging creates problems
+df_clean %>%
+  group_by(num_id) %>%
+  arrange(num_id) %>%
+  mutate(across(all_of(cols), list(lag = ~lag(.)))) %>%
+  summarise(across(ends_with("_lag"), function(x) sum(is.infinite(x) | is.nan(x), na.rm=TRUE))) %>%
+  filter(if_any(-num_id, function(x) x > 0))
+
+
+df_clean2 = df_clean %>% 
+  count(num_id) %>% 
+  filter(n <= 2) %>%
+  arrange(n)
+
+sapply(df_clean[, cols], function(x) range(x, na.rm=TRUE))
+
+
+df_clean %>% 
+  count(num_id) %>% 
+  arrange(n) 
+
+min_obs <- 40  # conservative cutoff
+
+enough_obs_ids <- df_clean %>%
+  count(num_id) %>%
+  filter(n >= min_obs) %>%
+  pull(num_id)
+
+cat("Removing", n_distinct(df_clean$num_id) - length(enough_obs_ids), "participants with <", min_obs, "obs\n")
+
+df_clean <- df_clean %>% filter(num_id %in% enough_obs_ids)
+cat(n_distinct(df_clean$num_id), "participants remaining\n")
+
+cat("For DF:", name, "STEP:", step, ":\n")
+
+num_stayed_NONdep = n_distinct(df_clean[df_clean$stayed_depressed==1,]$num_id)
+num_stayed_dep = n_distinct(df_clean[df_clean$stayed_depressed==2,]$num_id)
+
+cat(num_stayed_NONdep, "non-depressed participants. ", num_stayed_dep, "depressed participants.\n")
+
+
+
+```
+
+
+
+```{r model}
+clin <- mlVAR_GC(data = df_clean,  
+                        vars = cols, 
+                        idvar = "num_id", 
+                        groups = "stayed_depressed", 
+                        test = "permutation", 
+                        paired = FALSE, 
+                        contemporaneous = "orthogonal", 
+                        temporal = "orthogonal", 
+                        nP = 1000, nCores = 12, pbar = TRUE)
+
+
+
+l_outlist <- list()
+l_outlist$GC <- clin
+
+saveRDS(l_outlist, file=file.path(brighten_dir, paste0("mnet_output_stayed_depressed_",model,"_",step, "_", name,".RDS")))
+
+```
+
+```{r groups}
+
+
+clin_g1 <- mlVAR(data = df_clean[df_clean$stayed_depressed==1,],
+                       vars = cols,
+                       estimator = "lmer",
+                       idvar = "num_id",
+                       contemporaneous = "orthogonal",
+                       temporal = "orthogonal")
+
+l_outlist$g1 <- clin_g1
+
+
+clin_g2 <- mlVAR(data = df_clean[df_clean$stayed_depressed==2,],
+                       vars = cols,
+                       estimator = "lmer",
+                       idvar = "num_id",
+                       contemporaneous = "orthogonal",
+                       temporal = "orthogonal")
+
+l_outlist$g2 <- clin_g2
+
+saveRDS(l_outlist, file=file.path(brighten_dir, paste0("mnet_output_stayed_depressed_g1g2_",model,"_",name,".RDS")))
+
+
+# Plot no-clinical-level at baseline
+# P-values for the five parameter types:
+pvalues = clin$Pval
+
+# The observed group differences (i.e., the test statistics)
+# Can be found in:
+empdiff = clin$EmpDiffs
+
+# Specifically, the difference is: group 1 - group 2
+# For example:
+groupdiff = clin$EmpDiffs$Phi_mean[1,2,]
+# The true group difference was -0.4
+
+library(qgraph)
+# --- Check Results ---
+
+output <- l_outlist$GC
+out_g1 <- l_outlist$g1
+out_g2 <- l_outlist$g2
+
+# output$Runtime_min
+# output$Pval$Lagged_fixed
+#
+# mean(output$Pval$Lagged_fixed<=0.05)
+# sum(output$Pval$Lagged_fixed<=0.05)
+#
+# output$EmpDiffs
+
+# For Tutorial
+l_nets <- list()
+l_nets$phi_group0 <- out_g1$results$Beta$mean[, , 1]
+l_nets$phi_group1 <- out_g2$results$Beta$mean[, , 1]
+l_nets$phi_diff <- output$EmpDiffs$Lagged_fixed[, , 1]
+l_nets$phi_diffs_sig <- l_nets$phi_diff
+l_nets$phi_diffs_sig[output$Pval$Lagged_fixed>0.05] <- 0
+
+output$Pval$Lagged_fixed
+
+titles <- c("Stayed Not-Depressed", "Stayed Depressed",
+                  "Differences: Group Not-Depressed - Group Depressed",
+                  "Significant Differences")
+
+# --- Make Figure ---
+
+pdf(file.path(output_dir, paste0("Figure_stayed_depressed2_mnet_",model,"_",step, "_", name,"_",num_participants,"p_.pdf")), width = 18, height = 14)
+
+par(mfrow=c(2,2))
+
+for(i in 1:4) qgraph(t(l_nets[[i]]),
+                     layout = "circle",
+                     edge.labels = TRUE,
+                     title = titles[i],
+                     theme = "colorblind",
+                     maximum = 0.2,
+                     mar = rep(8, 4),      # large mar gives room for long labels
+                     labels = cols,  
+                     label.scale = FALSE,
+                     label.cex = 1,
+                     vsize = 15,           # smaller nodes
+                     esize = 10, 
+                     asize = 8, 
+                     label.prop = 1.5,    # pushes label outside the node boundary
+                     edge.label.cex = 0.7,
+                     edge.label.bg = TRUE,
+                     label.norm = "OOOOOOOOOOOOOOOO")  # reserves space for long labels
+
+dev.off()
+
+```
