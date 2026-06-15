@@ -32,6 +32,7 @@ features <- list(
                 lme = c("interaction_diversity","call_count","unreturned_calls","mobility",
                         "mobility_radius","sms_count","missed_interactions","call_duration", "phq2_1","phq2_2")
                 ),
+                
   v1_week = list(anova = c("aggregate_communication","mobility","mobility_radius",
                           "sms_length","sms_count","unreturned_calls","missed_interactions",
                           "call_count","call_duration", "interaction_diversity", "phq2_1","phq2_2","phq9_sum"), 
