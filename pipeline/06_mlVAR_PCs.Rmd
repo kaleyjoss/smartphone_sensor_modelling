@@ -147,6 +147,9 @@ df$end_depressed_binary2[df$end_depressed_binary2 == 3] <- 2
 
 cols <- grep("^pc_", colnames(df), value = TRUE)
 
+table(unique(df[, c("num_id", "end_depressed_binary2")])$end_depressed_binary2)
+
+```
 
 
 # Check values
