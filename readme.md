@@ -88,8 +88,8 @@ Reads the `*_trainval_transformed.csv` files produced by `02_processing_Pipeline
 4. **Correlation heatmaps** — Examines pairwise correlations across feature subsets (sensors, surveys, baseline).
 5. **Target variable exploration** — Distribution of PHQ-9 scores across time, versions, and subject subgroups.
 
-![Sub responses](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/EDA/charts/example_sub_responses.png)
-![Corr across subs](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/EDA/charts/strong_corr_heatmap.png)
+![Sub responses](EDA/charts/example_sub_responses.png)
+![Corr across subs](EDA/charts/strong_corr_heatmap.png)
 
 ## Outputs
 
@@ -123,20 +123,20 @@ Applies PCA **within each variable cluster** to reduce correlated features into 
 #### 1. Symptom/Sensor Correlation Matrices
 For each dataset variant, builds per-subject correlation matrices across sensor and EMA features separately, using `fs.make_symptom_matrices()`. Weather features are filtered to only the most informative subset.
 
-![Subject network](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/feature_pca/ex_sub_sensor_correlation.png)
+![Subject network](results/feature_pca/ex_sub_sensor_correlation.png)
 
 #### 2. PCA per Cluster
 `fs.pca_on_clusters()` applies PCA (default 1 component per cluster) to each variable cluster, producing named PCs (e.g., `pc_mobility`, `pc_calls`, `pc_phq2`). Loadings heatmaps can be toggled. Results saved as `*_trainval_sensor_pca.csv`.
 
-![HierAgg](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/feature_pca/v1_hieragg_clustering.png)
+![HierAgg](results/feature_pca/v1_hieragg_clustering.png)
 
 #### 3. Per-Subject Network Visualization
 For each subject, computes pairwise correlations across their PC scores and renders a weighted network graph (`fs.plot_network()`). Edges are color-coded: green = positive correlation, red = negative. Fixed node layouts are predefined for V1 daily and V1 weekly variants.
-![PC sub](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/subject_pc_networks/v1_day/94.0_pc_network.png)
+![PC sub](results/subject_pc_networks/v1_day/94.0_pc_network.png)
 
 #### 4. Heatmaps of PC Correlations
 Group-level heatmaps of PC-to-PC correlations across all subjects for each dataset variant.
-![PC Corrs](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/feature_pca/v1_pc_correlation.png)
+![PC Corrs](results/feature_pca/v1_pc_correlation.png)
 
 #### 5. Train/Val/Test Split
 `GroupShuffleSplit` is used to create subject-disjoint splits: 15% held-out test set, then 20% of remainder as validation. Splits are saved for downstream modeling.
@@ -231,7 +231,7 @@ After training, `shap.Explainer` is applied to the best model per fold. SHAP val
 panel reports its own independently-rendered Δ values (not simply the arithmetic difference of
 the rounded per-group labels above); see Table 2 for the figure's own difference values.*
 
-![v1 mlvar](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/mlVAR/trainval/Figure_end_depressed2_pca_v1_day_165p_.pdf)
+![v1 mlvar](results/mlVAR/trainval/Figure_end_depressed2_pca_v1_day_165p_.pdf)
 
 **Table 3. Permutation-significant differences (p < .05), V1 daily 4-node model.**
 
@@ -264,7 +264,7 @@ grouping.
 | commute / temp* | ≈ 0.27–0.29 | ≈ 0.36–0.38 |
 | phq2 | 0.27 | 0.36 |
 
-![v2 end depressed](/Users/klj9278/Library/CloudStorage/Box-Box/Kaley_research_NYU/EMA_projects/smartphone_sensor_modelling_may26/results/mlVAR/trainval/Figure_end_depressed_binary_pca_v2_day_141p_.pdf)
+![v2 end depressed](results/mlVAR/trainval/Figure_end_depressed_binary_pca_v2_day_141p_.pdf)
 
 **Table 5. Permutation-significant differences (p < .05), V2 daily 6-node model.**
 
