@@ -31,7 +31,7 @@ The BRIGHTEN study collected longitudinal EMA and passive phone sensor data from
 01_cleaning.ipynb                    → Raw data ingestion, date parsing, deduplication
 02_outcome_codes.ipynb               → Outcome variable construction
 02_var_clustering.ipynb              → Variable correlation clustering
-02_processing_Pipeline_oct25.ipynb   → Transformation, scaling, train/val/test splits
+02_processing.ipynb                  → Transformation, imputation, scaling, train/val/test splits
 03_subject_footprint.ipynb           → Per-subject data characterization
 03_eda.ipynb                         → Exploratory data analysis
 EDA.ipynb                            → Exploratory data analysis
@@ -67,10 +67,7 @@ pip install pandas numpy scikit-learn xgboost shap matplotlib seaborn plotly sci
 
 ---
 
-## README_03_EDA.md
-
-
-# 03_EDA.py — Exploratory Data Analysis
+# Exploratory Data Analysis
 
 ## Purpose
 
@@ -95,19 +92,58 @@ Reads the `*_trainval_transformed.csv` files produced by `02_processing_Pipeline
 
 Primarily visual (matplotlib/seaborn plots). Flags skewed columns stored in `skewed_cols` dict for downstream use.
 
+
+
 ## Notes
 
 - Weather features are partially excluded based on prior correlation analysis (only `humidity_mean/median` and `cloud_cover_mean/median` retained).
 - Binary/indicator/missing-flag columns are excluded from skew/kurtosis calculations.
 - Results inform which transformations (Yeo-Johnson, quantile) are applied in the processing pipeline.
 
+---
+
+# Processing Pipeline
+
+**Transformations**
+- Sklearn Pipeline are used for reproducibility and clarity
+- Specific variables are put through different transformation pipelines based on the variable type, the level of skew, and the distribution
+
+To view which variables go through which pipelines, and the values within those variables, go to the 02_pipeline.ipynb and go to the cell which says "# Preprocessing check-- visually inspect the variables going through each transformation pipeline".
+
+These are the different pipelines:
+```python
+yj_pipeline = Pipeline(steps=[
+	('power', PowerTransformer(method='yeo-johnson')),
+	('scale', StandardScaler())
+])
+
+bc_pipeline = Pipeline(steps=[
+	('power', PowerTransformer(method='box-cox')),
+	('scale', StandardScaler())
+])
+
+categorical_pipeline = Pipeline(steps=[
+	('encode', OneHotEncoder(handle_unknown='ignore', sparse_output=False)),
+])
+
+ordinal_pipeline = Pipeline(steps=[
+	('scale', StandardScaler())
+])
+
+non_skewed_pipeline = Pipeline(steps=[
+	('scale', StandardScaler())
+])
+```
+
+**Imputation**
+- Subjects are already filtered to only include those with >70% or more data for the 8 week period
+- Mean imputation is used per-subject (each subject gets imputed with their own mean for that column) for the 8 week period
+- Then imputations are checked visually using a Dash app to view different subjects' imputation values vs. known values, to inspect and flag any coding errors or leakage.
 
 ---
 
-## README_04_pca_nbs.md
 
-
-# 04_pca_nbs.py — Subject-Level PCA & Symptom Networks
+# Subject-Level PCA & Symptom Networks
 
 ## Purpose
 
@@ -156,7 +192,7 @@ Group-level heatmaps of PC-to-PC correlations across all subjects for each datas
 
 ---
 
-## README_04_predictive_models.md
+## Predictive Modelling
 Trains and evaluates multiple regression models to predict PHQ-9 depression scores from processed features and PCA-derived components. Uses group-aware cross-validation to prevent subject leakage, then applies SHAP for feature attribution.
 
 ### Inputs
