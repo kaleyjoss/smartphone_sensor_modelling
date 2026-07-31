@@ -201,20 +201,24 @@ After training, `shap.Explainer` is applied to the best model per fold. SHAP val
 ---
 
 
-# Results — mlVAR Group Comparison: End-of-Study Depression Status (`end_depressed`)
+# Results — mlVAR Group Comparison
 
-## 5.1 Analytic sample
+## End-of-Study Depression Status (`end_depressed`)
 
-| Variant | Group | N |
-|---|---|---|
-| V1 daily (4-node PCA) | Not depressed at 6 weeks | 103 |
-| V1 daily (4-node PCA) | Depressed at 6 weeks | 62 |
-| V2 daily (6-node PCA) | Not depressed at 6 weeks | 69 |
-| V2 daily (6-node PCA) | Depressed at 6 weeks | 72 |
+Subjects are included in "End depressed at 6 weeks" if their PHQ9-sum score at 6 weeks is >=12 out of 27, the clinical cutoff for medium depression. If their PHQ9-sum score is <12, they're included as "Not depressed". Subjects may be depressed throughout the whole time, or may have moved groups, relative to their baseline scores. 
+
+### `end_depressed` Analytic sample
+
+| Dataset | Features Used | Group | N |
+|---|---|---|---|
+| V1 daily | 4-node PCA | Not depressed at 6 weeks | 103 |
+| V1 daily | 4-node PCA | End Depressed at 6 weeks | 62 |
+| V2 daily | 6-node PCA | Not depressed at 6 weeks | 69 |
+| V2 daily | 6-node PCA | End Depressed at 6 weeks | 72 |
 
 ---
 
-## 5.2 V1 daily — 4-node PCA model (communication/PHQ-2)
+### 5.2 V1 daily — 4-node PCA model (communication/PHQ-2)
 
 **Nodes:** `phq2`, `sms`, `calls`, `uncalls` (unreturned calls).
 
@@ -250,7 +254,7 @@ grouping.
 
 ---
 
-## 5.3 V2 daily — 6-node PCA model (mobility/weather/PHQ-2)
+### 5.3 V2 daily — 6-node PCA model (mobility/weather/PHQ-2)
 
 **Nodes:** `commute`, `vehicle_location`, `active_mobility`, `sleep`, `phq2`, `temp`.
 
@@ -292,3 +296,31 @@ mobility/weather nodes, with no significant cross-lag involving `phq2`, `sleep`,
 
 ---
 
+## Consistent Depression Status (`stayed_depressed`)
+
+Subjects are included in "Stayed depressed at 6 weeks" if their PHQ9-sum score at 6 weeks is >=12 out of 27 AND their baseline PHQ9-sum score was  >=12 out of 27. Subjects are included in "Stayed Not depressed at 6 weeks" if their PHQ9-sum score at 6 weeks is <12 out of 27 AND their baseline PHQ9-sum score was  <12 out of 27. Subjects who moved groups over the course of the study are excluded. This attempts to disaggregate the changing network which may be exhibited by participants who changed groups (became more or less depressed over time), so that we can identify if there are consistent differences between the temporal-relationships of variables for groups whose temporal-relationships of variables are more likely to have been consistent over the time period.
+
+Imputation was done as described above, and the results here are shown both for the imputed datasets and the non-imputed datasets. 
+
+| Dataset | Features Used | Group | N |
+|---|---|---|---|
+| V1 daily | 15 LME Features | Stayed Depressed at 6 weeks | 38 |
+| V1 daily | 15 LME Features | Stayed Depressed at 6 weeks (with imputation) | 44 |
+| V1 daily | 15 LME Features | Stayed Not Depressed at 6 weeks | 70 |
+| V1 daily | 15 LME Features | Stayed Not Depressed at 6 weeks (with imputation) | 96 |
+| V2 daily | 15 LME Features | Stayed Depressed at 6 weeks | 14 |
+| V2 daily | 15 LME Features | Stayed Depressed at 6 weeks (with imputation) | 34 |
+| V2 daily | 15 LME Features | Stayed Not Depressed at 6 weeks | 19 |
+| V2 daily | 15 LME Features | Stayed Not Depressed at 6 weeks (with imputation)| 28 |
+
+### V1, Non-Imputed
+![v1nonimp](results/mlVAR/trainval/Figure_stayed_depressed_mnet_lme_v1_day_104p.png)
+
+### V1, Imputed
+![v1imp](results/mlVAR/trainval/Figure_stayed_depressed_mnet_lme_imputed_v1_day_141p.png)
+
+### V2, Non-Imputed
+![v2nonimp](results/mlVAR/trainval/Figure_stayed_depressed_mnet_lme_v2_day_33p.png)
+
+### V2, Imputed
+![v2imp](results/mlVAR/trainval/Figure_stayed_depressed2_mnet_lme_imputed_v2_day_62p.png)
